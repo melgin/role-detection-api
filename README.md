@@ -1,12 +1,6 @@
 # README #
 
-This README would normally document whatever steps are necessary to get your application up and running.
-
-### What is this repository for? ###
-
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+This project aims to develop an API to segment web pages into visual blocks and detect the roles of these blocks based on heuristic roles.
 
 ### How do I get set up? ###
 
