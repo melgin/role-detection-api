@@ -1,0 +1,4 @@
+{
+	"phantomjsPath": "..\\bin\\phantomjs.exe",
+	"takeScreenshot": false
+}
