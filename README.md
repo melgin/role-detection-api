@@ -32,3 +32,20 @@ The application starts listening at specified port.
 ### Dependencies ###
 
 Project depends on PhantomJS and several NodeJS packages. PhantomJS should be downloaded at http://phantomjs.org/ and binary path should be set in config file. Npm handles NodeJS dependencies.
+
+### Sample API Call ###
+
+Request:
+```
+#!javascript
+
+POST http://localhost:8080/
+{
+    "url":"http://elginakpinar.com",
+    "width": 1920,
+    "height": 1080
+}
+```
+
+Response:
+To be determined
