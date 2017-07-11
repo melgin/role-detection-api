@@ -4,6 +4,7 @@ This project aims to develop an API to segment web pages into visual blocks and 
 
 ### Installation ###
 
+To install NodeJS dependencies, use npm with following command:
 
 ```
 #!bash
@@ -11,17 +12,23 @@ This project aims to develop an API to segment web pages into visual blocks and 
 npm install
 ```
 
+It will download all modules. Then, start the application as follows:
+
 ```
 #!bash
 
 node index.js
 ```
 
+The application starts listening at specified port.
+
 
 ### Configuration ###
 
-* phantomjsPath: ex:"..\\bin\\phantomjs.exe",
-* takeScreenshot: false,
-* port: 
+* phantomjsPath: Path to the PhantomJS binary, ex:"..\\bin\\phantomjs.exe",
+* takeScreenshot: An option for saving the screenshot of the web page with visual blocks highlighted as a JPG file (true/false).
+* port: The port which application listens the requests, ex:8080
 
 ### Dependencies ###
+
+Project depends on PhantomJS and several NodeJS packages. PhantomJS should be downloaded at http://phantomjs.org/ and binary path should be set in config file. Npm handles NodeJS dependencies.
