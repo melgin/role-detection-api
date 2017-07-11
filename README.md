@@ -49,3 +49,12 @@ POST http://localhost:8080/
 
 Response:
 To be determined
+
+### Running Unit Tests ###
+
+```
+#!javascript
+
+npm install mocha -g
+mocha tests --recursive
+```
