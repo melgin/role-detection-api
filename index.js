@@ -13,7 +13,7 @@ var fs = require('fs'),
 app.use(bodyParser.json());
 app.post('/', process);
 
-var server = app.listen(8080, function () {
+var server = app.listen(config.port, function () {
 	var host = server.address().address
 	var port = server.address().port
 
