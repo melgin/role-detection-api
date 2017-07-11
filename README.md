@@ -2,22 +2,26 @@
 
 This project aims to develop an API to segment web pages into visual blocks and detect the roles of these blocks based on heuristic roles.
 
-### How do I get set up? ###
+### Installation ###
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
 
-### Contribution guidelines ###
+```
+#!bash
 
-* Writing tests
-* Code review
-* Other guidelines
+npm install
+```
 
-### Who do I talk to? ###
+```
+#!bash
 
-* Repo owner or admin
-* Other community or team contact
+node index.js
+```
+
+
+### Configuration ###
+
+* phantomjsPath: ex:"..\\bin\\phantomjs.exe",
+* takeScreenshot: false,
+* port: 
+
+### Dependencies ###
