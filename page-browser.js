@@ -24,15 +24,9 @@ function printArgs() {
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
-// window.console.log(msg);
 page.onConsoleMessage = function() {
-    //console.log("page.onConsoleMessage");
     printArgs.apply(this, arguments);
 };
-
-////////////////////////////////////////////////////////////////////////////////
 
 setTimeout(function() {
 	page.viewportSize = { width: width, height: height };
@@ -42,14 +36,13 @@ setTimeout(function() {
 				var root = page.evaluate(function() {
 					return traverseDOMTree(document, true, null, 0);
 				});
-				
 				console.log(JSON.stringify(root));
 			}
-			
+
 			if(takeScreenshot){
 				takePageScreenshot();
 			}
-			
+
 			page.close();
 			setTimeout(function(){
 				phantom.exit();

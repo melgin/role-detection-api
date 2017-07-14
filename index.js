@@ -4,7 +4,6 @@ var fs = require('fs'),
 	express = require('express'),
 	bodyParser = require('body-parser'),
 	app = express(),
-	bunyan = require('bunyan'),
 	logger = require('./logger'),
 	roleDetector = require('./role-detector'),
 	pageSegmenter = require('./page-segmenter'),
@@ -24,59 +23,65 @@ function process(req, res){
 	var url = req.body.url;
 	var width = +req.body.width ? req.body.width : 1920;
 	var height = +req.body.height ? req.body.height : 1920;
-	
+
 	var sendErrorResponse = function(status, message){
 		res.writeHead(status, {'Content-Type': 'application/json'});
 		res.end(JSON.stringify({"success": false, "error": message}));
 	}
-	
+
 	if(! urlValidator.isWebUri(url)){
 		logger.error("Invalid url:" + url);
 		return sendErrorResponse(400, "Invalid url!");
 	}
-	
+
 	if(width < 0){
 		logger.error("Invalid width:" + width);
 		return sendErrorResponse(400, "Invalid width!");
 	}
-	
+
 	if(height < 0){
 		logger.error("Invalid height:" + height);
 		return sendErrorResponse(400, "Invalid height!");
 	}
-	
+
 	var handle = function(error, stdout, stderr){
 		if(error){
+            console.log(error);
 			return sendErrorResponse(500, error);
 		}
-		
+
 		if(stderr){
+            console.log(stderr);
 			return sendErrorResponse(500, stderr);
 		}
-		
+
 		if(stdout){
+            console.log(stdout);
+
 			var nodeTree = null,
 				blockTree = null;
-			
+
 			try {
 				nodeTree = JSON.parse(stdout);
 			} catch (e){
+                console.log(e);
+                console.log(stdout);
 				return sendErrorResponse(500, e);
 			}
-			
+
 			if(nodeTree){
-				blockTree = pageSegmenter.segment(nodeTree);
+				blockTree = pageSegmenter.segment(nodeTree, width, height);
 			}
-			
+
 			if(blockTree){
 				roleDetector.detectRoles(blockTree);
 			}
-			
+
 			res.writeHead(200, {'Content-Type': 'application/json'});
 			res.end(JSON.stringify({"success": true, "result": blockTree}));
 		}
 	}
-	
-	exec(config.phantomjsPath + " page-browser.js " + url + " " + 
+
+	exec(config.phantomjsPath + " page-browser.js " + url + " " +
 		width + " " + height + " " + config.takeScreenshot, handle);
 }
