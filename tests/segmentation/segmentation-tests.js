@@ -41,6 +41,10 @@ describe('segment->virtualTextNode', function() {
     it('segment(node) should not further segment virtual text nodes', function() {
         expect(util.getTreeHierarchy(block)).to.equal("BODY[DIV,DIV,DIV,DIV]");
     });
+
+    it('segment(node) assign doc = 11 if all children are virtual text node', function() {
+        expect(block.children[0].doc).to.equal(11);
+    });
 });
 
 describe('segment->handleImageInChildren', function() {
@@ -53,6 +57,18 @@ describe('segment->handleImageInChildren', function() {
         "DIV[COMPOSITE[DIV,DIV],IMG,COMPOSITE[DIV,DIV]]," +
         "DIV[COMPOSITE[DIV,DIV,DIV,DIV],IMG]," +
         "DIV[COMPOSITE[DIV,DIV],DIV,COMPOSITE[DIV,DIV]]]");
+    });
+
+    it('segment(node) assign doc = 8 if children contains image', function() {
+        expect(block.children[0].doc).to.equal(8);
+    });
+
+    it('segment(node) assign doc = 11 if node is image', function() {
+        expect(block.children[0].children[0].doc).to.equal(11);
+    });
+
+    it('segment(node) assign doc = 9 if sibling is image', function() {
+        expect(block.children[0].children[1].doc).to.equal(9);
     });
 });
 
@@ -80,6 +96,18 @@ describe('segment->handleEmptyListItem', function() {
         "UL[LI,LI,LI,LI]," +
         "UL[LI,LI,LI,LI]]");
     });
+
+    it('segment(node) assign doc = 9 if children contains empty list item', function() {
+        expect(block.children[0].doc).to.equal(9);
+    });
+
+    it('segment(node) assign doc = 11 if node is empty list item', function() {
+        expect(block.children[0].children[0].doc).to.equal(11);
+    });
+
+    it('segment(node) assign doc = 9 if composite node has empty list item', function() {
+        expect(block.children[1].children[0].doc).to.equal(9);
+    });
 });
 
 describe('segment->handleLineBreaks', function() {
@@ -92,6 +120,14 @@ describe('segment->handleLineBreaks', function() {
         "DIV[DIV,COMPOSITE[DIV,DIV,DIV]]," +
         "DIV[COMPOSITE[DIV,DIV],COMPOSITE[DIV,DIV]]," +
         "DIV[DIV,DIV,DIV,DIV]]");
+    });
+
+    it('segment(node) assign doc = 7 if children contains line break', function() {
+        expect(block.children[2].doc).to.equal(7);
+    });
+
+    it('segment(node) assign doc = 9 if composite node has line break', function() {
+        expect(block.children[2].children[0].doc).to.equal(9);
     });
 });
 
@@ -119,6 +155,14 @@ describe('segment->handleDifferentBgColorAtChildren', function() {
         "DIV[DIV,DIV,DIV,DIV]," +
         "DIV[COMPOSITE[DIV,DIV,DIV],DIV]]");
     });
+
+    it('segment(node) assign doc = 4 if children have different background', function() {
+        expect(block.children[2].doc).to.equal(4);
+    });
+
+    it('segment(node) assign doc = 9 if node has different background than siblings', function() {
+        expect(block.children[3].children[0].doc).to.equal(9);
+    });
 });
 
 describe('segment->handleDivGroups', function() {
@@ -131,6 +175,14 @@ describe('segment->handleDivGroups', function() {
         "DIV[DIV,P,COMPOSITE[DIV,DIV]]," +
         "DIV[P,DIV,P,DIV]," +
         "DIV[COMPOSITE[DIV,DIV,DIV],P]]");
+    });
+
+    it('segment(node) assign doc = 9 if children have different background', function() {
+        expect(block.children[1].doc).to.equal(6);
+    });
+
+    it('segment(node) assign doc = 9 if node has different background than siblings', function() {
+        expect(block.children[3].children[0].doc).to.equal(9);
     });
 });
 
@@ -159,6 +211,14 @@ describe('segment->linebreak', function() {
         "DIV[A,DIV,DIV,DIV]," +
         "DIV[DIV,COMPOSITE,DIV]]");
     });
+
+    it('segment(node) assign doc = 11 if children are virtual text node', function() {
+        expect(block.children[0].doc).to.equal(11);
+    });
+
+    it('segment(node) assign doc = 9 if node has line break nodes', function() {
+        expect(block.children[1].doc).to.equal(9);
+    });
 });
 
 describe('segment->handleDifferentFloat', function() {
@@ -180,10 +240,10 @@ describe('segment', function() {
     var dom = JSON.parse(fs.readFileSync('./tests/data/bootstrap-starter-template-data.json', 'utf8')),
         block = segmenter.segment(dom, 1920, 1080);
 
-    it('segment(node) should divide the nodes with respect to specified rules', function() {
+    it('segment(node) should divide the nodes with respect to specified rules (starter-template)', function() {
         expect(util.getTreeHierarchy(block)).to.equal(
             "BODY[NAV[DIV,DIV[LI,LI,LI]]," +
-                 "DIV[H1,P]]");
+                 "DIV[H1,P[TEXT,TEXT]]]");
     });
 });
 
@@ -192,7 +252,7 @@ describe('segment', function() {
     var dom = JSON.parse(fs.readFileSync('./tests/data/bootstrap-jumbotron-data.json', 'utf8')),
         block = segmenter.segment(dom, 1920, 1080);
 
-    it('segment(node) should divide the nodes with respect to specified rules', function() {
+    it('segment(node) should divide the nodes with respect to specified rules (jumbotron)', function() {
         expect(util.getTreeHierarchy(block)).to.equal(
             "BODY[NAV[DIV,DIV[DIV,DIV,BUTTON]]," +
                  "DIV[H1,COMPOSITE[P,P]]," +
@@ -201,5 +261,92 @@ describe('segment', function() {
                  "DIV[H2,COMPOSITE[P,P]]," +
                  "DIV[H2,COMPOSITE[P,P]]" +
                  "],FOOTER]]");
+    });
+});
+
+
+describe('segment', function() {
+    console.log(' -- Bootstrap Signin http://getbootstrap.com/examples/signin/');
+    var dom = JSON.parse(fs.readFileSync('./tests/data/bootstrap-signin-data.json', 'utf8')),
+        block = segmenter.segment(dom, 1920, 1080);
+
+    it('segment(node) should divide the nodes with respect to specified rules (signin)', function() {
+        expect(util.getTreeHierarchy(block)).to.equal(
+            "BODY[H2,COMPOSITE[COMPOSITE[INPUT,INPUT],DIV[INPUT,TEXT],BUTTON]]");
+    });
+});
+
+describe('segment', function() {
+    console.log(' -- Bootstrap Signin http://getbootstrap.com/examples/sticky-footer/');
+    var dom = JSON.parse(fs.readFileSync('./tests/data/bootstrap-sticky-footer-data.json', 'utf8')),
+        block = segmenter.segment(dom, 1920, 1080);
+
+    it('segment(node) should divide the nodes with respect to specified rules (sticky-footer)', function() {
+        expect(util.getTreeHierarchy(block)).to.equal(
+            "BODY[DIV[DIV,COMPOSITE[P,P]],FOOTER]");
+    });
+});
+
+describe('segment', function() {
+    console.log(' -- Bootstrap Narrow Jumbotron http://getbootstrap.com/examples/jumbotron-narrow/');
+    var dom = JSON.parse(fs.readFileSync('./tests/data/bootstrap-jumbotron-narrow-data.json', 'utf8')),
+        block = segmenter.segment(dom, 1920, 1080);
+
+    it('segment(node) should divide the nodes with respect to specified rules (jumbotron-narrow)', function() {
+        expect(util.getTreeHierarchy(block)).to.equal(
+            "BODY[DIV[NAV[LI,LI,LI],H3]," +
+                 "DIV[H1,COMPOSITE[P,P]]," +
+                 "COMPOSITE[DIV[DIV[COMPOSITE[H4,P],COMPOSITE[H4,P],COMPOSITE[H4,P]]," +
+                               "DIV[COMPOSITE[H4,P],COMPOSITE[H4,P],COMPOSITE[H4,P]]],FOOTER]]");
+    });
+});
+
+describe('segment', function() {
+    console.log(' -- Bootstrap Navbar http://getbootstrap.com/examples/navbar/');
+    var dom = JSON.parse(fs.readFileSync('./tests/data/bootstrap-navbar-data.json', 'utf8')),
+        block = segmenter.segment(dom, 1920, 1080);
+
+    it('segment(node) should divide the nodes with respect to specified rules (navbar)', function() {
+        expect(util.getTreeHierarchy(block)).to.equal(
+            "BODY[NAV[DIV,DIV[UL[LI,LI,LI,LI],UL[LI,LI,LI]]],DIV[H1,COMPOSITE[P,P]]]");
+    });
+});
+
+describe('segment', function() {
+    console.log(' -- Bootstrap Justified Nav http://getbootstrap.com/examples/justified-nav/');
+    var dom = JSON.parse(fs.readFileSync('./tests/data/bootstrap-justified-nav-data.json', 'utf8')),
+        block = segmenter.segment(dom, 1920, 1080);
+
+    it('segment(node) should divide the nodes with respect to specified rules (justified-nav)', function() {
+        expect(util.getTreeHierarchy(block)).to.equal(
+            "BODY[DIV[H3,NAV[LI,LI,LI,LI,LI,LI]],COMPOSITE[DIV[H1,COMPOSITE[P,P]]," +
+            "COMPOSITE[DIV[DIV[H2,COMPOSITE[P,P,P]],DIV[H2,COMPOSITE[P,P]],DIV[H2,COMPOSITE[P,P]]],FOOTER]]]");
+    });
+});
+
+describe('segment', function() {
+    console.log(' -- Bootstrap Non-responsive http://getbootstrap.com/examples/non-responsive/');
+    var dom = JSON.parse(fs.readFileSync('./tests/data/bootstrap-non-responsive-data.json', 'utf8')),
+        block = segmenter.segment(dom, 1920, 1080);
+
+    it('segment(node) should divide the nodes with respect to specified rules (non-responsive)', function() {
+        expect(util.getTreeHierarchy(block)).to.equal(
+            "BODY[NAV[DIV,DIV[UL[LI,LI,LI,LI],FORM[DIV,BUTTON],UL[LI,LI,LI]]],DIV[DIV[H1,P]," +
+            "COMPOSITE[COMPOSITE[H3,P],COMPOSITE[H3,P],COMPOSITE[H3,COMPOSITE[P,P]]," +
+            "COMPOSITE[H3,DIV[DIV,DIV,DIV]]]]]");
+    });
+});
+
+describe('segment', function() {
+    console.log(' -- Bootstrap Offcanvas http://getbootstrap.com/examples/offcanvas/');
+    var dom = JSON.parse(fs.readFileSync('./tests/data/bootstrap-offcanvas-data.json', 'utf8')),
+        block = segmenter.segment(dom, 1920, 1080);
+
+    it('segment(node) should divide the nodes with respect to specified rules (offcanvas)', function() {
+        expect(util.getTreeHierarchy(block)).to.equal(
+            "BODY[NAV[DIV,DIV[LI,LI,LI]],DIV[DIV[DIV[DIV[H1,P],DIV[COMPOSITE[DIV[H2,COMPOSITE[P,P]]," +
+            "DIV[H2,COMPOSITE[P,P]],DIV[H2,COMPOSITE[P,P]]],COMPOSITE[DIV[H2,COMPOSITE[P,P]]," +
+            "DIV[H2,COMPOSITE[P,P]]," +
+            "DIV[H2,COMPOSITE[P,P]]]]],DIV[A,A,A,A,A,A,A,A,A,A]],FOOTER]]");
     });
 });

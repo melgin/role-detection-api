@@ -1,4 +1,3 @@
-
 function getTreeHierarchy(blockTree){
     if(!blockTree.children || blockTree.children.length === 0){
         return blockTree.tagName;

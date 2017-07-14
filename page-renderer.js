@@ -81,9 +81,7 @@ function traverseDOMTree(root, border, parentBordered, blockLevel) { //traverse 
 				// do nothing
 			} else if(el.nodeName === 'HEAD') {
 				// do nothing
-			} else if(el.nodeName === 'INPUT') {
-                // do nothing
-            } else if(el.nodeName === 'HR' || el.nodeName === 'BR') {
+			} else if(el.nodeName === 'HR' || el.nodeName === 'BR') {
                 nodeValue.containsLineBreak = true;
 
                 childValue = {
