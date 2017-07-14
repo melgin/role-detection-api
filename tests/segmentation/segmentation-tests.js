@@ -149,6 +149,18 @@ describe('segment->handleColumnsAtChildren', function() {
     });
 });
 
+describe('segment->linebreak', function() {
+    console.log(' -- Line break case');
+    var dom = JSON.parse(fs.readFileSync('./tests/data/linebreak-data.json', 'utf8')),
+        block = segmenter.segment(dom, 1920, 1080);
+
+    it('segment(node) should divide the nodes with respect to line break nodes', function() {
+        expect(util.getTreeHierarchy(block)).to.equal("BODY[DIV," +
+        "DIV[A,DIV,DIV,DIV]," +
+        "DIV[DIV,COMPOSITE,DIV]]");
+    });
+});
+
 describe('segment->handleDifferentFloat', function() {
     console.log(' -- Float case');
     var dom = JSON.parse(fs.readFileSync('./tests/data/float-data.json', 'utf8')),
@@ -160,5 +172,34 @@ describe('segment->handleDifferentFloat', function() {
         "DIV[DIV,COMPOSITE[DIV,DIV,DIV]]," +
         "DIV[DIV,COMPOSITE[DIV,DIV,DIV],COMPOSITE[DIV,DIV,DIV]]," +
         "DIV[COMPOSITE[DIV,DIV],COMPOSITE[DIV,DIV]]]");
+    });
+});
+
+describe('segment', function() {
+    console.log(' -- Bootstrap Starter Template http://getbootstrap.com/examples/starter-template/');
+    var dom = JSON.parse(fs.readFileSync('./tests/data/bootstrap-starter-template-data.json', 'utf8')),
+        block = segmenter.segment(dom, 1920, 1080);
+
+    it('segment(node) should divide the nodes with respect to specified rules', function() {
+        expect(util.getTreeHierarchy(block)).to.equal(
+            "BODY[NAV[DIV,DIV[LI,LI,LI]]," +
+                 "DIV[H1,P]]");
+    });
+});
+
+describe('segment', function() {
+    console.log(' -- Bootstrap Jumbotron http://getbootstrap.com/examples/jumbotron/');
+    var dom = JSON.parse(fs.readFileSync('./tests/data/bootstrap-jumbotron-data.json', 'utf8')),
+        block = segmenter.segment(dom, 1920, 1080);
+
+    it('segment(node) should divide the nodes with respect to specified rules', function() {
+        expect(util.getTreeHierarchy(block)).to.equal(
+            "BODY[NAV[DIV,DIV[DIV,DIV,BUTTON]]," +
+                 "DIV[H1,COMPOSITE[P,P]]," +
+                 "DIV[DIV[" +
+                 "DIV[H2,COMPOSITE[P,P]]," +
+                 "DIV[H2,COMPOSITE[P,P]]," +
+                 "DIV[H2,COMPOSITE[P,P]]" +
+                 "],FOOTER]]");
     });
 });

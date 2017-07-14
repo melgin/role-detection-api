@@ -329,11 +329,11 @@ function handleDifferentMargin(block, node, doc, callback){
             marginTop = child.attributes.marginTop,
             marginBottom = child.attributes.marginBottom;
 
-		if (hasMargin(marginTop) && hasMargin(marginBottom)) {
+		if (util.hasMargin(marginTop) && util.hasMargin(marginBottom)) {
             flush();
             putIntoPool(block, child, doc, callback);
             marginAdded = true;
-		} else if (hasMargin(marginTop)) {
+		} else if (util.hasMargin(marginTop)) {
             flush();
 
             if(! marginAdded){
@@ -342,7 +342,7 @@ function handleDifferentMargin(block, node, doc, callback){
             } else {
                 compositeNode.children.push(child);
             }
-		} else if (hasMargin(marginBottom)) {
+		} else if (util.hasMargin(marginBottom)) {
             if(! marginAdded){
                 putIntoPool(block, child, doc, callback);
                 marginAdded = true;
@@ -374,17 +374,6 @@ function handleDifferentMargin(block, node, doc, callback){
 }
 
 /**
- * Checks whether specified margin value is 0 or auto.
- *
- * @param {string} margin - Margin value to be checked
- *
- * @method
- */
-function hasMargin(margin) {
-	return margin && margin.toLowerCase() !== 'auto' && parseInt(margin, 10) !== 0;
-}
-
-/**
  * If a node contains a child whose tag is HR or BR, then the node is divided into two as
  * the nodes before the separator and after the separator. For each side of the separator,
  * two new blocks are created and children nodes are put under these blocks. Note that,
@@ -400,33 +389,17 @@ function hasMargin(margin) {
  */
 function handleLineBreaks(block, node, doc, callback){
     block.doc = 6;
-
-    var i;
-    for(i = 0; i < node.children.length; ){
-        if(emptyListItemCheck(node.children[i])){
-            node.children.splice(i, 1);
-        } else {
-            break;
-        }
-    }
-
-    for(i = node.children.length - 1; i > 0; i--){
-        if(emptyListItemCheck(node.children[i])){
-            node.children.splice(i, 1);
-        } else {
-            break;
-        }
-    }
+    removeChildrenAfterCheck(node, lineBreakCheck);
 
     if(node.children.length === 0){
         return;
     }
 
-    function emptyListItemCheck(child){
+    function lineBreakCheck(child){
         return child.tagName === 'HR' || child.tagName === 'BR';
     }
 
-    return divideChildren(block, node, doc, callback, emptyListItemCheck, function(){
+    return divideChildren(block, node, doc, callback, lineBreakCheck, function(){
         return false;
     });
 }
@@ -446,22 +419,7 @@ function handleLineBreaks(block, node, doc, callback){
  * @method
  */
 function handleEmptyListItem(block, node, doc, callback){
-    var i;
-    for(i = 0; i < node.children.length; ){
-        if(emptyListItemCheck(node.children[i])){
-            node.children.splice(i, 1);
-        } else {
-            break;
-        }
-    }
-
-    for(i = node.children.length - 1; i > 0; i--){
-        if(emptyListItemCheck(node.children[i])){
-            node.children.splice(i, 1);
-        } else {
-            break;
-        }
-    }
+    removeChildrenAfterCheck(node, emptyListItemCheck);
 
     if(node.children.length === 0){
         return;
@@ -671,6 +629,8 @@ function createCompositeBlockWithFloat(block, compositeNode, doc, floatException
  */
 function createCompositeBlock(block, compositeNode, doc, floatExceptionCheck, callback) {
     if(compositeNode.children && compositeNode.children.length > 0){
+        removeChildrenAfterCheck(compositeNode, lineBreakCheck);
+
         /* Prevent unnecessarily nested composite nodes */
         if(compositeNode.isCompositeNode && compositeNode.children.length === 1){
             return putIntoPool(block, compositeNode.children[0], doc, callback);
@@ -684,27 +644,29 @@ function createCompositeBlock(block, compositeNode, doc, floatExceptionCheck, ca
             putIntoPool(block, compositeNode, doc, callback);
         //}
     }
+
+    function lineBreakCheck(child){
+        return child.tagName === 'HR' || child.tagName === 'BR';
+    }
 }
 
-/**
- * Checks whether tags of all children are one of the tags in specified tag array
- *
- * @param {array} children - array of children
- * @param {array} tagList - tag list to be checked
- *
- * @method
- */
-function allChildrenMatches(children, tagList) {
-	if(! children || children.length === 0){
-		return false;
-	} else {
-        for(var i = 0; i < children.length; i++){
-            if(tagList.indexOf(children[i].tagName) === -1){
-                return false;
-            }
+function removeChildrenAfterCheck(node, check){
+    var i;
+    for(i = 0; i < node.children.length; ){
+        if(check(node.children[i])){
+            node.children.splice(i, 1);
+        } else {
+            break;
         }
-        return true;
-	}
+    }
+
+    for(i = node.children.length - 1; i > 0; i--){
+        if(check(node.children[i])){
+            node.children.splice(i, 1);
+        } else {
+            break;
+        }
+    }
 }
 
 function getNewCompositeNode(xpath){

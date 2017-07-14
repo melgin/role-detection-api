@@ -1,5 +1,12 @@
 var util = require('./common-util');
 
+var inlineNodes = ["A", "ABBR", "ACRONYM", "B", "BDO",
+	"BIG", "BUTTON", "CITE", "CODE", "DEL", "DFN", "EM",
+	"FONT", "I", "IMG", "INPUT", "INS", "KBD", "LABEL",
+	"OBJECT", "Q", "S", "SAMP", "SMALL", "SPAN", "STRIKE",
+	"STRONG", "SUB", "SUP", "TT", "U", "VAR", "APPLET",
+	"SELECT", "TEXTAREA"];
+
 function areAllChildrenVirtualTextNodes(node) {
     var state = true;
     if(node.children){
@@ -16,7 +23,9 @@ function childrenHaveDifferentBackground(node){
         var tempBg = node.children[0].attributes.background;
 
         node.children.forEach(function(child){
-            state = state || child.attributes.background !== tempBg;
+            if(child.tagName !== 'BUTTON'){
+                state = state || child.attributes.background !== tempBg;
+            }
         });
 
         return state;
@@ -42,6 +51,22 @@ function isEmptyListItem(node){
 }
 
 function containsLineBreak(node){
+    if(node.isCompositeNode){
+        if(! node.children || node.children.length === 0){
+            return false;
+        }
+
+        for(var i = 0; i < node.children.length; i++){
+            var child = node.children[i];
+
+            if(child.tagName === 'HR' || child.tagName === 'BR'){
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     return node.containsLineBreak ? true : false;
 }
 
@@ -108,7 +133,7 @@ function hasDivGroups(node) {
         node.children.forEach(function(child){
             if(child.tagName === 'DIV'){
                 divCount++;
-            } else if(! child.inline){
+            } else if(! child.inline && inlineNodes.indexOf(child.tagName) === -1){
                 lineBreakCount++;
             }
         });
@@ -145,23 +170,18 @@ function hasDifferentMarginInChildren(node) {
         }
 
         for(var i = 0; i < node.children.length; i++){
-            var child = node.children[i],
-                marginTop = child.attributes.marginTop,
-                marginBottom = child.attributes.marginBottom;
+            var child = node.children[i];
 
-            if (i !== 0 && hasMargin(marginTop)) {
+            if (i !== 0 && util.hasMargin(child.attributes.marginTop)) {
 				return true;
-			} else if (i !== node.children.length - 1 && hasMargin(marginBottom)) {
+			} else if (i !== node.children.length - 1 &&
+                util.hasMargin(child.attributes.marginBottom)) {
 				return true;
 			}
         }
     }
 
     return false;
-}
-
-function hasMargin(margin) {
-	return margin && margin.toLowerCase() !== 'auto' && parseInt(margin, 10) !== 0;
 }
 
 function hasDifferentFontSizeInChildren(node) {
