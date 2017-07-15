@@ -1,4 +1,3 @@
-var util = require('./common-util');
 
 /**
  * Constructs a new block and put into the block pool
@@ -12,18 +11,18 @@ var util = require('./common-util');
  */
 function putIntoPool(parentBlock, node, doc, callback){
     /* For some tags, if node has only one child, put the child into the pool */
-	if((node.tagName === 'TR' || node.tagName === 'UL') && node.children && node.children.length === 1){
-        var child = node.children[0];
+	if((node.tagNameEqualsTo('TR') || node.tagNameEqualsTo('UL')) && node.hasSingleChild()){
+        var child = node.getChildAt(0);
 
-        if(child.tagName === 'TD' || child.tagName === 'LI'){
+        if(child.tagNameEqualsTo('TD') || child.tagNameEqualsTo('LI')){
             node = child;
         }
     }
 
     var block = {
         doc: doc,
-        tagName: node.tagName,
-        xpath: node.xpath,
+        tagName: node.getTagName(),
+        xpath: node.getXPath(),
         name: parentBlock.name + '.' + (parentBlock.children ? parentBlock.children.length + 1 : 1),
         children: []
     };
@@ -57,29 +56,29 @@ function putIntoPool(parentBlock, node, doc, callback){
  * @method
  */
 function handleRowsAtChildren(block, node, doc, screenWidth, callback){
-    var compositeNode = getNewCompositeNode(node.xpath),
+    var compositeNode = node.getNewCompositeNode(),
         compositeNodeList = [];
 
-    var tempY = node.children[0].attributes.positionY;
+    var tempY = node.getChildAt(0).getAttributes().positionY;
 
-    for(var i = 0; i < node.children.length; i++){
-        var child = node.children[i];
+    for(var i = 0; i < node.getChildCount(); i++){
+        var child = node.getChildAt(i);
 
-        if(tempY === child.attributes.positionY){
-            compositeNode.children.push(child);
+        if(tempY === child.getAttributes().positionY){
+            compositeNode.addChild(child);
         } else {
-            tempY = child.attributes.positionY;
-            if(compositeNode.children.length > 0){
+            tempY = child.getAttributes().positionY;
+            if(compositeNode.hasChild()){
                 compositeNodeList.push(compositeNode);
             }
 
-            compositeNode = getNewCompositeNode(node.xpath);
+            compositeNode = node.getNewCompositeNode();
 
-            compositeNode.children.push(child);
+            compositeNode.addChild(child);
         }
     }
 
-    if(compositeNode.children.length > 0){
+    if(compositeNode.hasChild()){
         compositeNodeList.push(compositeNode);
     }
 
@@ -99,46 +98,43 @@ function handleRowsAtChildren(block, node, doc, screenWidth, callback){
  * @method
  */
 function handleDifferentBgColorAtChildren(block, node, doc, callback){
-    if(! node.children || node.children.length === 0){
+    if(! node.hasChild()){
         return;
     }
 
-    if(node.children.length === 1){
+    if(node.hasSingleChild()){
         return putIntoPool(block, node, doc, callback);
     }
 
-
     var tempBackground;
-
-    if(node.isCompositeNode){
-        tempBackground = node.children[0].attributes.background;
+    if(node.isCompositeNode()){
+        tempBackground = node.getChildAt(0).getAttributes().background;
     } else {
-        tempBackground = node.attributes.background;
+        tempBackground = node.getAttributes().background;
     }
 
-
-    var compositeNode = getNewCompositeNode(node.xpath),
+    var compositeNode = node.getNewCompositeNode(),
         compositeNodeList = [];
 
-    for(var i = 0; i < node.children.length; i++){
-        var child = node.children[i],
-            childBackground = child.attributes.background;
+    for(var i = 0; i < node.getChildCount(); i++){
+        var child = node.getChildAt(i),
+            childBackground = child.getAttributes().background;
 
         if(childBackground !== tempBackground){
-            if(compositeNode.children.length > 0){
+            if(compositeNode.hasChild()){
                 //compositeNodeList.push(compositeNode);
                 createCompositeBlock(block, compositeNode, doc, true, callback);
             }
 
             //tempBackground = childBackground;
             putIntoPool(block, child, doc, callback);
-            compositeNode = getNewCompositeNode(node.xpath);
+            compositeNode = node.getNewCompositeNode();
         } else {
-            compositeNode.children.push(child);
+            compositeNode.addChild(child);
         }
     }
 
-    if(compositeNode.children.length > 0){
+    if(compositeNode.hasChild()){
         //compositeNodeList.push(compositeNode);
         createCompositeBlock(block, compositeNode, doc, true, callback);
     }
@@ -165,45 +161,45 @@ function handleDifferentBgColorAtChildren(block, node, doc, callback){
  * @method
  */
 function handleDifferentFontSize(block, node, doc, callback){
-    var maxFontSize = util.getMaxFontSizeInChildren(node.children),
-        compositeNode = getNewCompositeNode(node.xpath),
+    var maxFontSize = node.getMaxFontSizeInChildren(),
+        compositeNode = node.getNewCompositeNode(),
         i = null,
         flag = null,
         childFontSize = null, child = null;
 
-	if (parseInt(util.getMaxFontSize(node.children[0])) === maxFontSize) {
+	if (parseInt(node.getChildAt(0).getMaxFontSize()) === maxFontSize) {
 		/* First child has the maximum font size. */
-		var count = util.getCountOfChildrenWithMaxFontSize(node.children, maxFontSize);
+		var count = node.getCountOfChildrenWithMaxFontSize(maxFontSize);
 
 		if (count == 1) {
 			/* There is only one child with maximum font size
 			 * Put the first child into pool and create a composite
 			 * node for the remaining */
-			putIntoPool(block, node.children[0], 11, callback);
+			putIntoPool(block, node.getChildAt(0), 11, callback);
 
-            if(node.children.length === 2){
-                putIntoPool(block, node.children[1], 11, callback);
+            if(node.getChildCount() === 2){
+                putIntoPool(block, node.getChildAt(1), 11, callback);
             } else {
-                for (i = 1; i < node.children.length; i++) {
-    				compositeNode.children.push(node.children[i]);
+                for (i = 1; i < node.getChildCount(); i++) {
+    				compositeNode.addChild(node.getChildAt(i));
     			}
     			createCompositeBlock(block, compositeNode, 10, true, callback);
             }
-		} else if (util.areAllMaxFontSizeChildrenAtFront(node.children, count, maxFontSize)) {
+		} else if (node.areAllMaxFontSizeChildrenAtFront(count, maxFontSize)) {
 			/* First n children have the maximum font size
 			 * where n is equal to the number of children
 			 * with maximum font size. */
-			var compositeNode2 = getNewCompositeNode(node.xpath),
-                compositeNode3 = getNewCompositeNode(node.xpath);
+			var compositeNode2 = node.getNewCompositeNode(),
+                compositeNode3 = node.getNewCompositeNode();
 
 			/* Create a composite node for the children with max. font size. */
 			for (i = 0; i < count; i++) {
-				compositeNode2.children.push(node.children[i]);
+				compositeNode2.addChild(node.getChildAt(i));
 			}
 
 			/* Create a composite node for the others. */
-			for (i = count; i < node.children.length; i++) {
-				compositeNode3.children.push(node.children[i]);
+			for (i = count; i < node.getChildCount(); i++) {
+				compositeNode3.addChild(node.getChildAt(i));
 			}
 
 			createCompositeBlock(block, compositeNode2, 10, true, callback);
@@ -220,17 +216,17 @@ function handleDifferentFontSize(block, node, doc, callback){
 
     function processChildrenWithDifferentFontSize(){
         flag = true;
-		for (i = 0; i < node.children.length; i++) {
-			child = node.children[i];
-            childFontSize = util.getMaxFontSize(child);
+		for (i = 0; i < node.getChildCount(); i++) {
+			child = node.getChildAt(i);
+            childFontSize = child.getMaxFontSize();
 
 			if (childFontSize === maxFontSize && flag) {
 				createCompositeBlock(block, compositeNode, 10, true, callback);
-				compositeNode = getNewCompositeNode(node.xpath);
-				compositeNode.children.push(child);
+				compositeNode = node.getNewCompositeNode();
+				compositeNode.addChild(child);
 				flag = false;
 			} else {
-				compositeNode.children.push(child);
+				compositeNode.addChild(child);
 				if (childFontSize !== maxFontSize){
                     flag = true;
                 }
@@ -246,10 +242,10 @@ function countFloats(node){
         numberOfFloats = 0,
         lastFloat = 'none';
 
-	for (var i = 0; i < node.children.length; i++) {
-		var child = node.children[i],
-            childFloat = child.attributes.float,
-            childClear = child.attributes.clear;
+	for (var i = 0; i < node.getChildCount(); i++) {
+		var child = node.getChildAt(i),
+            childFloat = child.getAttributes().float,
+            childClear = child.getAttributes().clear;
 
         if(lastFloat === 'none'){
             if(childFloat !== lastFloat){
@@ -306,24 +302,24 @@ function countFloats(node){
 function handleDifferentFloat(block, node, doc, callback){
     var i;
     if(countFloats(node) === 1){
-        for (i = 0; i < node.children.length; i++) {
-            putIntoPool(block, node.children[i], 11, callback);
+        for (i = 0; i < node.getChildCount(); i++) {
+            putIntoPool(block, node.getChildAt(i), 11, callback);
         }
         return;
     }
 
-    var compositeNode = getNewCompositeNode(node.xpath),
+    var compositeNode = node.getNewCompositeNode(),
         lastFloat = 'none';
 
-	for (i = 0; i < node.children.length; i++) {
-		var child = node.children[i],
-            childFloat = child.attributes.float,
-            childClear = child.attributes.clear;
+	for (i = 0; i < node.getChildCount(); i++) {
+		var child = node.getChildAt(i),
+            childFloat = child.getAttributes().float,
+            childClear = child.getAttributes().clear;
 
         if(lastFloat === 'none'){
             if(childFloat !== lastFloat){
                 flush();
-                compositeNode.children.push(child);
+                compositeNode.addChild(child);
             } else {
                 putIntoPool(block, child, 11, callback);
 
@@ -332,7 +328,7 @@ function handleDifferentFloat(block, node, doc, callback){
                 }
             }
         } else {
-            compositeNode.children.push(child);
+            compositeNode.addChild(child);
             if(childFloat !== lastFloat && childFloat !== 'right'){
                 flush();
             }
@@ -344,11 +340,11 @@ function handleDifferentFloat(block, node, doc, callback){
     flush();
 
     function flush(){
-        if(compositeNode.children.length !== 0){
+        if(compositeNode.hasChild()){
             createCompositeBlockWithFloat(block, compositeNode, doc, true, callback);
         }
 
-        compositeNode = getNewCompositeNode(node.xpath);
+        compositeNode = node.getNewCompositeNode();
     }
 }
 
@@ -372,33 +368,33 @@ function handleDifferentFloat(block, node, doc, callback){
  * @method
  */
 function handleDifferentMargin(block, node, doc, callback){
-    var compositeNode = getNewCompositeNode(node.xpath);
+    var compositeNode = node.getNewCompositeNode();
 
     var marginAdded = false;
-    for(var i = 0; i < node.children.length; i++){
-        var child = node.children[i],
-            marginTop = child.attributes.marginTop,
-            marginBottom = child.attributes.marginBottom;
+    for(var i = 0; i < node.getChildCount(); i++){
+        var child = node.getChildAt(i),
+            marginTop = child.getAttributes().marginTop,
+            marginBottom = child.getAttributes().marginBottom;
 
-		if (util.hasMargin(marginTop) && util.hasMargin(marginBottom)) {
+		if (hasMargin(marginTop) && hasMargin(marginBottom)) {
             flush();
             putIntoPool(block, child, doc, callback);
             marginAdded = true;
-		} else if (util.hasMargin(marginTop)) {
+		} else if (hasMargin(marginTop)) {
             flush();
 
             if(! marginAdded){
                 putIntoPool(block, child, doc, callback);
                 marginAdded = true;
             } else {
-                compositeNode.children.push(child);
+                compositeNode.addChild(child);
             }
-		} else if (util.hasMargin(marginBottom)) {
+		} else if (hasMargin(marginBottom)) {
             if(! marginAdded){
                 putIntoPool(block, child, doc, callback);
                 marginAdded = true;
             } else {
-                compositeNode.children.push(child);
+                compositeNode.addChild(child);
             }
 
             flush();
@@ -406,17 +402,17 @@ function handleDifferentMargin(block, node, doc, callback){
             if(! marginAdded){
                 putIntoPool(block, child, doc, callback);
             } else {
-                compositeNode.children.push(child);
+                compositeNode.addChild(child);
             }
 		}
     }
 
     function flush(){
-        if(compositeNode.children.length > 0){
+        if(compositeNode.hasChild()){
             createCompositeBlock(block, compositeNode, doc, true, callback);
         }
 
-        compositeNode = getNewCompositeNode(node.xpath);
+        compositeNode = node.getNewCompositeNode();
     }
 
     flush();
@@ -441,12 +437,12 @@ function handleDifferentMargin(block, node, doc, callback){
 function handleLineBreaks(block, node, doc, callback){
     removeChildrenAfterCheck(node, lineBreakCheck);
 
-    if(node.children.length === 0){
+    if(! node.hasChild()){
         return;
     }
 
     function lineBreakCheck(child){
-        return child.tagName === 'HR' || child.tagName === 'BR';
+        return child.tagNameEqualsTo('HR') || child.tagNameEqualsTo('BR');
     }
 
     return divideChildren(block, node, doc, callback, lineBreakCheck, function(){
@@ -471,12 +467,12 @@ function handleLineBreaks(block, node, doc, callback){
 function handleEmptyListItem(block, node, doc, callback){
     removeChildrenAfterCheck(node, emptyListItemCheck);
 
-    if(node.children.length === 0){
+    if(! node.hasChild()){
         return;
     }
 
     function emptyListItemCheck(child) {
-        return child.tagName === 'LI' && (! child.children || child.children.length === 0);
+        return child.tagNameEqualsTo('LI') && ! child.hasChild();
     }
 
     return divideChildren(block, node, doc, callback, emptyListItemCheck, function(){
@@ -496,7 +492,7 @@ function handleEmptyListItem(block, node, doc, callback){
  */
 function handleDivGroups(block, node, doc, callback){
     return divideChildren(block, node, doc, callback, function(child){
-        return ! (child.tagName === 'DIV' || child.inline || +child.type === 3);
+        return ! (child.tagNameEqualsTo('DIV') || child.isInlineNode() || child.isTextNode());
     });
 }
 
@@ -512,7 +508,8 @@ function handleDivGroups(block, node, doc, callback){
  */
 function handleImageInChildren(block, node, doc, callback){
     return divideChildren(block, node, doc, callback, function(child){
-        return child.tagName === 'IMG' || (child.children.length === 1 && child.containsImage);
+        return child.tagNameEqualsTo('IMG') || (child.hasSingleChild() &&
+        child.containsImage());
     });
 }
 
@@ -528,7 +525,8 @@ function handleImageInChildren(block, node, doc, callback){
  */
 function handleObjectInChildren(block, node, doc, callback){
     return divideChildren(block, node, doc, callback, function(child){
-        return child.lineBreakObject || (child.children.length === 1 && child.containsLineBreakTerminalNode);
+        return child.isLineBreakObject() ||
+        (child.hasSingleChild() && child.containsLineBreakTerminalNode());
     });
 }
 
@@ -544,7 +542,7 @@ function handleObjectInChildren(block, node, doc, callback){
  */
 function handleNormalForm(block, node, doc, callback){
     return divideChildren(block, node, doc, callback, function(child){
-        return child.lineBreak || child.tagName === 'IMG' || child.lineBreakObject;
+        return child.isLineBreakNode() || child.tagNameEqualsTo('IMG') || child.isLineBreakObject();
     });
 }
 
@@ -560,14 +558,14 @@ function handleNormalForm(block, node, doc, callback){
  * @method
  */
 function divideChildren(block, node, doc, callback, conditionCheck, conditionHandler){
-    var compositeNode = getNewCompositeNode(node.xpath);
+    var compositeNode = node.getNewCompositeNode();
 
     var prevBlockCount = 0;
-    for(var i = 0; i < node.children.length; i++){
-        var child = node.children[i];
+    for(var i = 0; i < node.getChildCount(); i++){
+        var child = node.getChildAt(i);
 
         if(conditionCheck(child)){
-            if(compositeNode.children.length > 0){
+            if(compositeNode.hasChild()){
                 prevBlockCount++;
                 createCompositeBlock(block, compositeNode, doc, true, callback);
             }
@@ -583,18 +581,18 @@ function divideChildren(block, node, doc, callback, conditionCheck, conditionHan
                 putIntoPool(block, child, doc, callback);
             }
 
-            compositeNode = getNewCompositeNode(node.xpath);
+            compositeNode = node.getNewCompositeNode();
         } else {
-            compositeNode.children.push(child);
+            compositeNode.addChild(child);
         }
     }
 
-    if(compositeNode.children.length > 0){
+    if(compositeNode.hasChild()){
         if(prevBlockCount > 0){
             createCompositeBlock(block, compositeNode, doc, true, callback);
         } else {
-            for(i = 0; i < compositeNode.children.length; i++){
-                putIntoPool(block, compositeNode.children[i], doc, callback);
+            for(i = 0; i < compositeNode.getChildCount(); i++){
+                putIntoPool(block, compositeNode.getChildAt(i), doc, callback);
             }
         }
     }
@@ -617,14 +615,14 @@ function processCompositeNodeList(block, compositeNodeList, doc, floatExceptionC
     if(compositeNodeList.length === 1){
         var node = compositeNodeList[0];
 
-        if(! node.children || node.children.length === 0){
+        if(! node.hasChild()){
             return;
         }
 
-        for(var i = 0; i < node.children.length; i++){
-            var child = node.children[i];
+        for(var i = 0; i < node.getChildCount(); i++){
+            var child = node.getChildAt(i);
 
-            if(child.isCompositeNode){
+            if(child.isCompositeNode()){
 				createCompositeBlock(block, child, doc, floatExceptionCheck, callback);
 			} else {
                 putIntoPool(block, child, 11, callback);
@@ -649,15 +647,15 @@ function processCompositeNodeList(block, compositeNodeList, doc, floatExceptionC
  * @method
  */
 function createCompositeBlockWithFloat(block, compositeNode, doc, floatExceptionCheck, callback) {
-	if (! compositeNode.children || compositeNode.children.length === 0) {
+	if (! compositeNode.hasChild()) {
 		return;
-	} else if (compositeNode.children.length === 1) {
-		createCompositeBlock(block, compositeNode.children[0], doc, floatExceptionCheck, callback);
+	} else if (compositeNode.hasSingleChild()) {
+		createCompositeBlock(block, compositeNode.getChildAt(0), doc, floatExceptionCheck, callback);
 	} else {
         var newBlock = putIntoPool(block, compositeNode, doc, null);
 
-        compositeNode.children.forEach(function(child){
-            if(child.attributes && child.attributes.float === 'none'){
+        compositeNode.getChildren().forEach(function(child){
+            if(child.getAttributes().float === 'none'){
                 putIntoPool(newBlock, child, 11, callback);
             } else {
                 createCompositeBlock(newBlock, child, 11, floatExceptionCheck, callback);
@@ -678,16 +676,16 @@ function createCompositeBlockWithFloat(block, compositeNode, doc, floatException
  * @method
  */
 function createCompositeBlock(block, compositeNode, doc, floatExceptionCheck, callback) {
-    if(compositeNode.children && compositeNode.children.length > 0){
+    if(compositeNode.hasChild()){
         removeChildrenAfterCheck(compositeNode, lineBreakCheck);
-        if(compositeNode.children.length === 0){
+        if(! compositeNode.hasChild()){
             return;
         }
 
         /* Prevent unnecessarily nested composite nodes */
-        if(compositeNode.isCompositeNode && compositeNode.children.length === 1){
-            var child = compositeNode.children[0];
-            if(child.tagName === 'HR' || child.tagName === 'BR'){
+        if(compositeNode.isCompositeNode() && compositeNode.hasSingleChild()){
+            var child = compositeNode.getChildAt(0);
+            if(lineBreakCheck(child)){
                 return;
             }
 
@@ -704,31 +702,38 @@ function createCompositeBlock(block, compositeNode, doc, floatExceptionCheck, ca
     }
 
     function lineBreakCheck(child){
-        return child.tagName === 'HR' || child.tagName === 'BR';
+        return child.tagNameEqualsTo('HR') || child.tagNameEqualsTo('BR');
     }
 }
 
 function removeChildrenAfterCheck(node, check){
     var i;
-    for(i = 0; i < node.children.length; ){
-        if(check(node.children[i])){
-            node.children.splice(i, 1);
+    for(i = 0; i < node.getChildCount(); ){
+        if(check(node.getChildAt(i))){
+            node.removeChildAt(i);
         } else {
             break;
         }
     }
 
-    for(i = node.children.length - 1; i > 0; i--){
-        if(check(node.children[i])){
-            node.children.splice(i, 1);
+    for(i = node.getChildCount() - 1; i > 0; i--){
+        if(check(node.getChildAt(i))){
+            node.removeChildAt(i);
         } else {
             break;
         }
     }
 }
 
-function getNewCompositeNode(xpath){
-    return {children: [], isCompositeNode: true, tagName: "COMPOSITE", xpath: xpath + '/COMPOSITE'};
+/**
+ * Checks whether specified margin value is 0 or auto.
+ *
+ * @param {string} margin - Margin value to be checked
+ *
+ * @method
+ */
+function hasMargin(margin) {
+	return margin && margin.toLowerCase() !== 'auto' && parseInt(margin, 10) !== 0;
 }
 
 module.exports.putIntoPool = putIntoPool;

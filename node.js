@@ -16,7 +16,7 @@ Node.prototype.getMaxFontSize = function() {
 
     var maxFontSize = this.getFontSize();
     if(this.hasChild()){
-        for(var i = 0; i < this.node.children.length; i++){
+        for(var i = 0; i < this.getChildCount(); i++){
             maxFontSize = Math.max(maxFontSize, this.getChildAt(i).getMaxFontSize());
         }
     }
@@ -27,7 +27,7 @@ Node.prototype.getMaxFontSize = function() {
 Node.prototype.getMaxFontSizeInChildren = function(){
     var maxFontSize = -1;
 
-    for(var i = 0; i < this.node.children.length; i++){
+    for(var i = 0; i < this.getChildCount(); i++){
         maxFontSize = Math.max(maxFontSize, this.getChildAt(i).getMaxFontSize());
     }
 
@@ -37,7 +37,7 @@ Node.prototype.getMaxFontSizeInChildren = function(){
 Node.prototype.getCountOfChildrenWithMaxFontSize = function(maxFontSize){
     var count = 0;
 
-    for(var i = 0; i < count; i++){
+    for(var i = 0; i < this.getChildCount(); i++){
         var fontSize = this.getChildAt(i).getMaxFontSize();
 
         if(fontSize === maxFontSize){
@@ -74,6 +74,10 @@ Node.prototype.getFontSize = function(){
 
 Node.prototype.isInlineNode = function(){
     return this.node.inline;
+}
+
+Node.prototype.containsImage = function(){
+    return this.node.containsImage;
 }
 
 Node.prototype.areAllChildrenVirtualTextNodes = function() {
@@ -315,11 +319,7 @@ Node.prototype.childrenHaveRows = function(screenWidth){
 }
 
 Node.prototype.getAttributes = function(){
-    if(this.node.attributes){
-        return this.node.attributes;
-    }
-
-    return {};
+    return this.node.attributes;
 }
 
 Node.prototype.isTextNode = function(){
@@ -330,12 +330,28 @@ Node.prototype.tagNameEqualsTo = function(tagName){
     return this.node.tagName === tagName;
 }
 
+Node.prototype.getTagName = function(){
+    return this.node.tagName;
+}
+
 Node.prototype.hasSingleChild = function() {
     return this.node.children && this.node.children.length === 1;
 }
 
 Node.prototype.isCompositeNode = function(){
     return this.node.isCompositeNode;
+}
+
+Node.prototype.isLineBreakNode = function(){
+    return this.node.lineBreak;
+}
+
+Node.prototype.isLineBreakObject = function(){
+    return this.node.lineBreakObject;
+}
+
+Node.prototype.containsLineBreakTerminalNode = function(){
+    return this.node.containsLineBreakTerminalNode;
 }
 
 Node.prototype.getNode = function(){
@@ -352,7 +368,7 @@ Node.prototype.getNewCompositeNode = function(){
 }
 
 Node.prototype.addChild = function(child){
-    this.node.children.push(new Node(child.getNode()));
+    this.node.children.push(child.getNode());
 }
 
 Node.prototype.getChildCount = function(){
