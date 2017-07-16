@@ -1,1 +1,0 @@
-mocha tests --recursive

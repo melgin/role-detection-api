@@ -4,7 +4,8 @@
   "description": "An API for segmenting web pages and detecting heuristic roles of web elements",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified, yet\" && exit 1"
+    "test": "mocha tests --recursive",
+	"start": "node index.js"
   },
   "author": "Elgin Akpinar",
   "license": "ISC",

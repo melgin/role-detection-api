@@ -1,4 +1,5 @@
-var Node = require('./node'),
+var Node = require('./dom-node'),
+    Block = require('./block'),
     blockBuilder = require('./utils/block-builder');
 
 var DOC_COLUMN_FORM = 2,
@@ -21,10 +22,10 @@ function segment(rootNode, width, height){
     screenWidth = width;
     screenHeight = height;
 
-	return blockExtraction({
+	return blockExtraction(new Block({
         tagName: 'BODY',
         xpath: 'BODY',
-        name: 'VB.1', children:[]}, new Node(rootNode), 1);
+        name: 'VB.1', children:[]}), new Node(rootNode), 1);
 }
 
 function handleSingleChild(block, node){
@@ -33,7 +34,7 @@ function handleSingleChild(block, node){
         if(node.isCompositeNode()){
             blockBuilder.putIntoPool(block, node, DOC_TERMINAL_FORM, null);
         } else {
-            block.doc = DOC_TERMINAL_FORM;
+            block.setDoc(DOC_TERMINAL_FORM);
         }
 
         return null;
@@ -57,52 +58,52 @@ function blockExtraction(block, currentNode, doc) {
 		// be a block
 		if (currentNode.areAllChildrenVirtualTextNodes()) {
             log(currentNode.xpath + ' all children are virtual text nodes ');
-            block.doc = DOC_TERMINAL_FORM;
+            block.setDoc(DOC_TERMINAL_FORM);
 			// the node will be a block
 			//blockBuilder.putIntoPool(block, node, DOC_VIRTUAL_FORM, null);
 		} else if(currentNode.childrenHaveRows(screenWidth)){
             log(currentNode.xpath + ' has columns');
-            block.doc = DOC_COLUMN_FORM;
+            block.setDoc(DOC_COLUMN_FORM);
 			blockBuilder.handleRowsAtChildren(block, currentNode, DOC_COLUMN_FORM, screenWidth, blockExtraction);
 		} else if(currentNode.childrenHaveDifferentBackground()){
             log(currentNode.xpath + ' children have different background');
-            block.doc = DOC_COLOR_FORM;
+            block.setDoc(DOC_COLOR_FORM);
 			blockBuilder.handleDifferentBgColorAtChildren(block, currentNode, DOC_COLOR_FORM, blockExtraction);
 		} else if (currentNode.hasDifferentFontSizeInChildren()) {
             log(currentNode.xpath + ' children have different font size');
-            block.doc = DOC_FONT_SIZE_FORM;
+            block.setDoc(DOC_FONT_SIZE_FORM);
 			blockBuilder.handleDifferentFontSize(block, currentNode, DOC_FONT_SIZE_FORM, blockExtraction);
 		} else if (currentNode.containsLineBreak()){
             log(currentNode.xpath + ' contains line break');
-            block.doc = DOC_LINEBREAK_FORM;
+            block.setDoc(DOC_LINEBREAK_FORM);
 			blockBuilder.handleLineBreaks(block, currentNode, 9, blockExtraction);
 		} else if(currentNode.containsEmptyListItem()) {
             log(currentNode.xpath + ' contains empty list item');
-            block.doc = 9;
+            block.setDoc(9);
 			blockBuilder.handleEmptyListItem(block, currentNode, 9, blockExtraction);
 		} else if (currentNode.hasDivGroups()) {
             log(currentNode.xpath + ' has div groups');
-            block.doc = DOC_GROUP_FORM;
+            block.setDoc(DOC_GROUP_FORM);
 			blockBuilder.handleDivGroups(block, currentNode, 9, blockExtraction);
 		} else if (currentNode.hasDifferentFloatInChildren()) {
             log(currentNode.xpath + ' children have different float');
-            block.doc = DOC_FLOAT_FORM;
+            block.setDoc(DOC_FLOAT_FORM);
 			blockBuilder.handleDifferentFloat(block, currentNode, 9, blockExtraction);
 		} else if (currentNode.hasDifferentMarginInChildren()) {
             log(currentNode.xpath + ' children have margin');
-            block.doc = DOC_MARGIN_FORM;
+            block.setDoc(DOC_MARGIN_FORM);
 			blockBuilder.handleDifferentMargin(block, currentNode, DOC_MARGIN_FORM, blockExtraction);
 		} else if (currentNode.containsImage()) {
             log(currentNode.xpath + ' contains image');
-            block.doc = DOC_IMAGE_FORM - 1;
+            block.setDoc(DOC_IMAGE_FORM - 1);
 			blockBuilder.handleImageInChildren(block, currentNode, DOC_IMAGE_FORM, blockExtraction);
 		} else if (currentNode.containsLineBreakObject()) {
             log(currentNode.xpath + ' contains line break object');
-            block.doc = DOC_IMAGE_FORM;
+            block.setDoc(DOC_IMAGE_FORM);
 			blockBuilder.handleObjectInChildren(block, currentNode, DOC_IMAGE_FORM, blockExtraction);
 		} else {
             log(currentNode.xpath + ' normal form');
-            block.doc = DOC_NORMAL_FORM;
+            block.setDoc(DOC_NORMAL_FORM);
 			blockBuilder.handleNormalForm(block, currentNode, DOC_NORMAL_FORM, blockExtraction);
 		}
 

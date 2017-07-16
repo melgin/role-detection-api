@@ -56,8 +56,6 @@ function process(req, res){
 		}
 
 		if(stdout){
-            console.log(stdout);
-
 			var nodeTree = null,
 				blockTree = null;
 
@@ -78,7 +76,7 @@ function process(req, res){
 			}
 
 			res.writeHead(200, {'Content-Type': 'application/json'});
-			res.end(JSON.stringify({"success": true, "result": blockTree}));
+			res.end(JSON.stringify({"success": true, "result": blockTree.toJson()}));
 		}
 	}
 

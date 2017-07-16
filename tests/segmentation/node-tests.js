@@ -1,6 +1,6 @@
 var chai = require('chai'),
     expect = chai.expect,
-    Node = require('./../../node'),
+    Node = require('./../../dom-node'),
     fs = require('fs');
 
 describe('containsEmptyListItem', function() {

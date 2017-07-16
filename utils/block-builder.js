@@ -1,3 +1,4 @@
+var Block = require('../block');
 
 /**
  * Constructs a new block and put into the block pool
@@ -19,19 +20,15 @@ function putIntoPool(parentBlock, node, doc, callback){
         }
     }
 
-    var block = {
+    var block = new Block({
         doc: doc,
         tagName: node.getTagName(),
         xpath: node.getXPath(),
-        name: parentBlock.name + '.' + (parentBlock.children ? parentBlock.children.length + 1 : 1),
+        name: parentBlock.getName() + '.' + (parentBlock.getChildCount() + 1),
         children: []
-    };
+    });
 
-    if(! parentBlock.children){
-        parentBlock.children = [];
-    }
-
-    parentBlock.children.push(block);
+    parentBlock.addChild(block);
 
 	/* Recursive call for children */
     if(callback){
@@ -83,6 +80,7 @@ function handleRowsAtChildren(block, node, doc, screenWidth, callback){
     }
 
     processCompositeNodeList(block, compositeNodeList, doc, true, callback);
+    node.removeAllChildren();
 	compositeNodeList = null;
 	compositeNode = null;
 }
@@ -140,6 +138,7 @@ function handleDifferentBgColorAtChildren(block, node, doc, callback){
     }
 
 	processCompositeNodeList(block, compositeNodeList, doc, true, callback);
+    node.removeAllChildren();
 	compositeNodeList = null;
 	compositeNode = null;
 }
@@ -213,6 +212,8 @@ function handleDifferentFontSize(block, node, doc, callback){
 		/* First child does not have the maximum font size*/
 		processChildrenWithDifferentFontSize();
 	}
+
+    node.removeAllChildren();
 
     function processChildrenWithDifferentFontSize(){
         flag = true;
@@ -338,6 +339,7 @@ function handleDifferentFloat(block, node, doc, callback){
 	}
 
     flush();
+    node.removeAllChildren();
 
     function flush(){
         if(compositeNode.hasChild()){
@@ -416,6 +418,7 @@ function handleDifferentMargin(block, node, doc, callback){
     }
 
     flush();
+    node.removeAllChildren();
 
 	compositeNode = null;
 }
@@ -597,6 +600,7 @@ function divideChildren(block, node, doc, callback, conditionCheck, conditionHan
         }
     }
 
+    node.removeAllChildren();
 	compositeNode = null;
 }
 

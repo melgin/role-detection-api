@@ -1,5 +1,11 @@
+"use strict";
+
+module.exports = Node;
+
 function Node(node) {
     this.node = node;
+
+    return this;
 }
 
 var inlineNodes = ["A", "ABBR", "ACRONYM", "B", "BDO",
@@ -383,7 +389,9 @@ Node.prototype.removeChildAt = function(index){
     this.node.children.splice(index, 1);
 }
 
-
+Node.prototype.removeAllChildren = function(){
+    this.node.children = [];
+}
 
 /**
  * Checks whether specified margin value is 0 or auto.
@@ -395,5 +403,3 @@ Node.prototype.removeChildAt = function(index){
 function hasMargin(margin) {
 	return margin && margin.toLowerCase() !== 'auto' && parseInt(margin, 10) !== 0;
 }
-
-module.exports = Node;
