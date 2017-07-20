@@ -93,7 +93,7 @@ Block.prototype.getAsFact = function(pageWidth, pageHeight, fontSize, fontColor)
 	var tagName = getInnerTagNames(this.getNode());
 
     return {
-        "hasId": this.getNode().id + ' ' + this.getNode().className,
+        "hasId": getIdentifierFeatures(this.getNode()),
         "hasTag": tagName,
         "mustHaveTag": tagName,
 		"isComposite": this.getNode().isCompositeNode,
@@ -102,7 +102,7 @@ Block.prototype.getAsFact = function(pageWidth, pageHeight, fontSize, fontColor)
 		"isAtomic": this.getChildCount() === 0 ? 0 : 1,
 		"inPosition": getPositionX(this.getNode()) + ',' + getPositionY(this.getNode()),
 		"fontSize": checkFontSize(this.getNode()),
-		"border": "",
+		"border": checkBorder(this.getNode()),
 		"fontColor": checkFontColor(this.getNode()),
 		"hasBackground": checkBackground(this.getNode()),
 		"wordCount": getWordCount(this.getNode()),
@@ -117,6 +117,44 @@ Block.prototype.getAsFact = function(pageWidth, pageHeight, fontSize, fontColor)
 		"hasChild": "",
 		"hasSibling": ""
     };
+
+    function getIdentifierFeatures(node){
+        var features = [];
+
+        if(node.id){
+            features.push(node.id);
+        }
+
+        if(node.className){
+            features.push(node.className);
+        }
+
+        if(node.attributes){
+            if(node.attributes.src){
+                features.push(node.attributes.src);
+            }
+
+            if(node.attributes.value){
+                features.push(node.attributes.value);
+            }
+
+            if(node.attributes.role){
+                features.push(node.attributes.role);
+            }
+
+            if(node.attributes.name){
+                features.push(node.attributes.name);
+            }
+
+            if(node.attributes.backgroundImage &&
+                node.attributes.backgroundImage !== 'none' &&
+                node.attributes.backgroundImage.indexOf('linear-gradient') !== 0){
+                features.push(node.attributes.backgroundImage);
+            }
+        }
+
+        return features.join();
+    }
 
     function getInnerTagNames(node){
         var tagName = node.tagName ? node.tagName.toLowerCase() : '';

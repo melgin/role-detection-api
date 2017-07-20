@@ -27,25 +27,32 @@ function traverseDOMTree(root, border, parentBordered, blockLevel) { //traverse 
 		attributes: {
 			width: root.offsetWidth,
 			height: root.offsetHeight,
-            name: root.name,
-            value: root.value,
-            src: root.src,
             wordCount: getWordCount(root),
-            role: root.role,
-			hover: root.hover,
-			for: root.for,
-			href: root.href,
-			command: root.command,
-			type: root.type,
-			onFocus: root.onFocus,
-			onClick: root.onClick,
-			method: root.method,
-			action: root.action,
-			alt: root.alt,
-			title: root.title,
             text: getText(root)
 		}
 	};
+
+    setAttribute(root, 'name');
+    setAttribute(root, 'value');
+    setAttribute(root, 'src');
+    setAttribute(root, 'role');
+    setAttribute(root, 'hover');
+    setAttribute(root, 'for');
+    setAttribute(root, 'href');
+    setAttribute(root, 'command');
+    setAttribute(root, 'type');
+    setAttribute(root, 'onFocus');
+    setAttribute(root, 'onClick');
+    setAttribute(root, 'method');
+    setAttribute(root, 'action');
+    setAttribute(root, 'alt');
+    setAttribute(root, 'title');
+
+    function setAttribute(node, key){
+        if(node[key] && node[key] !== 'none'){
+            nodeValue.attributes[key] = node[key];
+        }
+    }
 
 	var style = window.getComputedStyle(root);
 	if(style){
@@ -63,8 +70,6 @@ function traverseDOMTree(root, border, parentBordered, blockLevel) { //traverse 
         nodeValue.attributes.borderRight = style.borderRight;
         nodeValue.attributes.borderTop = style.borderTop;
         nodeValue.attributes.borderBottom = style.borderBottom;
-
-        nodeValue.attributes.padding = style.padding;
 		nodeValue.attributes.backgroundImage = style.backgroundImage;
 		nodeValue.attributes.backgroundColor = style.backgroundColor;
 		nodeValue.attributes.background = style.background;

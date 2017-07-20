@@ -7,7 +7,7 @@ var fs = require('fs'),
 	logger = require('./logger'),
 	roleDetector = require('./role-detector'),
 	pageSegmenter = require('./page-segmenter'),
-	exec = require('child_process').exec;
+    Horseman = require('node-horseman');
 
 app.use(bodyParser.json());
 app.post('/', process);
@@ -44,34 +44,27 @@ function process(req, res){
 		return sendErrorResponse(400, "Invalid height!");
 	}
 
-	var handle = function(error, stdout, stderr){
-		if(error){
-            console.log(error);
-			return sendErrorResponse(500, error);
-		}
+    var horseman = new Horseman({phantomPath: config.phantomjsPath});
 
-		if(stderr){
-            console.log(stderr);
-			return sendErrorResponse(500, stderr);
-		}
-
-		if(stdout){
-			var nodeTree = null,
-				blockTree = null,
+    horseman
+        .userAgent('Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0')
+        .viewport(width, height)
+        .open(url)
+        .on('consoleMessage', function( msg ){
+            console.log(msg);
+        })
+        .injectJs('page-renderer.js')
+        .evaluate(function () {
+            return traverseDOMTree(document, true, null, 0);
+        })
+        .then(function (nodeTree) {
+            var blockTree = null,
                 pageWidth = 0,
                 pageHeight = 0,
                 fontColor = null,
                 fontSize = null;
 
-			try {
-				nodeTree = JSON.parse(stdout);
-			} catch (e){
-                console.log(e);
-                console.log(stdout);
-				return sendErrorResponse(500, e);
-			}
-
-			if(nodeTree){
+            if(nodeTree){
                 pageWidth = nodeTree.attributes.width;
                 pageHeight = nodeTree.attributes.height;
                 fontColor = nodeTree.attributes.fontColor;
@@ -84,14 +77,11 @@ function process(req, res){
 			} else {
                 sendResponse(blockTree);
             }
-		}
+        })
+        .close();
 
         function sendResponse(block){
             res.writeHead(200, {'Content-Type': 'application/json'});
             res.end(JSON.stringify({"success": true, "result": block.toJson()}));
         }
-	}
-
-	exec(config.phantomjsPath + " page-browser.js " + url + " " +
-		width + " " + height + " " + config.takeScreenshot, handle);
 }

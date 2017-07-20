@@ -15,7 +15,8 @@
       "bunyan": "^1.8.1",
       "express": "^4.14.0",
       "request": "^2.74.0",
-      "valid-url": "^1.0.9"
+      "valid-url": "^1.0.9",
+      "node-horseman": "^3.3.0"
   },
   "devDependencies": {
     "chai": "^4.0.2",
