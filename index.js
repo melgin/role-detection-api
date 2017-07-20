@@ -20,9 +20,17 @@ var server = app.listen(config.port, function () {
 });
 
 function process(req, res){
-	var url = req.body.url;
-	var width = +req.body.width ? req.body.width : 1920;
-	var height = +req.body.height ? req.body.height : 1920;
+	var url = req.body.url,
+        width = +req.body.width ? req.body.width : 1920,
+        height = +req.body.height ? req.body.height : 1920,
+        agent = req.body.userAgent,
+        t0 = 0,
+        t1 = 0,
+        t2 = 0;
+
+    if(agent){
+        agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0';
+    }
 
 	var sendErrorResponse = function(status, message){
 		res.writeHead(status, {'Content-Type': 'application/json'});
@@ -46,8 +54,10 @@ function process(req, res){
 
     var horseman = new Horseman({phantomPath: config.phantomjsPath});
 
+    t0 = Date.now();
+
     horseman
-        .userAgent('Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0')
+        .userAgent(agent)
         .viewport(width, height)
         .open(url)
         .on('consoleMessage', function( msg ){
@@ -64,6 +74,8 @@ function process(req, res){
                 fontColor = null,
                 fontSize = null;
 
+            t1 = Date.now();
+
             if(nodeTree){
                 pageWidth = nodeTree.attributes.width;
                 pageHeight = nodeTree.attributes.height;
@@ -71,6 +83,8 @@ function process(req, res){
                 fontSize = nodeTree.attributes.fontSize;
 				blockTree = pageSegmenter.segment(nodeTree, width, height);
 			}
+
+            t2 = Date.now();
 
 			if(blockTree){
 				roleDetector.detectRoles(blockTree, pageWidth, pageHeight, fontSize, fontColor, sendResponse);
@@ -81,7 +95,14 @@ function process(req, res){
         .close();
 
         function sendResponse(block){
+            var t3 = Date.now();
             res.writeHead(200, {'Content-Type': 'application/json'});
-            res.end(JSON.stringify({"success": true, "result": block.toJson()}));
+            res.end(JSON.stringify({
+                "success": true,
+                "renderingTime": t1 - t0,
+                "segmentationTime": t2 - t1,
+                "reasoningTime": t3 - t2,
+                "result": block.toJson()
+            }));
         }
 }
