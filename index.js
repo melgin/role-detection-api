@@ -57,7 +57,11 @@ function process(req, res){
 
 		if(stdout){
 			var nodeTree = null,
-				blockTree = null;
+				blockTree = null,
+                pageWidth = 0,
+                pageHeight = 0,
+                fontColor = null,
+                fontSize = null;
 
 			try {
 				nodeTree = JSON.parse(stdout);
@@ -68,16 +72,24 @@ function process(req, res){
 			}
 
 			if(nodeTree){
+                pageWidth = nodeTree.attributes.width;
+                pageHeight = nodeTree.attributes.height;
+                fontColor = nodeTree.attributes.fontColor;
+                fontSize = nodeTree.attributes.fontSize;
 				blockTree = pageSegmenter.segment(nodeTree, width, height);
 			}
 
 			if(blockTree){
-				roleDetector.detectRoles(blockTree);
-			}
-
-			res.writeHead(200, {'Content-Type': 'application/json'});
-			res.end(JSON.stringify({"success": true, "result": blockTree.toJson()}));
+				roleDetector.detectRoles(blockTree, pageWidth, pageHeight, fontSize, fontColor, sendResponse);
+			} else {
+                sendResponse(blockTree);
+            }
 		}
+
+        function sendResponse(block){
+            res.writeHead(200, {'Content-Type': 'application/json'});
+            res.end(JSON.stringify({"success": true, "result": block.toJson()}));
+        }
 	}
 
 	exec(config.phantomjsPath + " page-browser.js " + url + " " +

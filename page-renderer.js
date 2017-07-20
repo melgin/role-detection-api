@@ -1,6 +1,3 @@
-﻿var colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd",
-    "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"];
-
 var invalidNodes = ["AREA", "BASE", "BASEFONT", "COL",
 	"COLGROUP", "LINK", "MAP", "META", "PARAM", "SCRIPT",
 	"STYLE", "TITLE", "!DOCTYPE", "NOSCRIPT"];
@@ -29,7 +26,24 @@ function traverseDOMTree(root, border, parentBordered, blockLevel) { //traverse 
 		className: root.className,
 		attributes: {
 			width: root.offsetWidth,
-			height: root.offsetHeight
+			height: root.offsetHeight,
+            name: root.name,
+            value: root.value,
+            src: root.src,
+            wordCount: getWordCount(root),
+            role: root.role,
+			hover: root.hover,
+			for: root.for,
+			href: root.href,
+			command: root.command,
+			type: root.type,
+			onFocus: root.onFocus,
+			onClick: root.onClick,
+			method: root.method,
+			action: root.action,
+			alt: root.alt,
+			title: root.title,
+            text: getText(root)
 		}
 	};
 
@@ -45,6 +59,12 @@ function traverseDOMTree(root, border, parentBordered, blockLevel) { //traverse 
 		nodeValue.attributes.marginTop = style.marginTop;
 		nodeValue.attributes.marginBottom = style.marginBottom;
 		nodeValue.attributes.border = style.border;
+        nodeValue.attributes.borderLeft = style.borderLeft;
+        nodeValue.attributes.borderRight = style.borderRight;
+        nodeValue.attributes.borderTop = style.borderTop;
+        nodeValue.attributes.borderBottom = style.borderBottom;
+
+        nodeValue.attributes.padding = style.padding;
 		nodeValue.attributes.backgroundImage = style.backgroundImage;
 		nodeValue.attributes.backgroundColor = style.backgroundColor;
 		nodeValue.attributes.background = style.background;
@@ -114,14 +134,11 @@ function traverseDOMTree(root, border, parentBordered, blockLevel) { //traverse 
                     if(! isInline) {
 						if(border){
 							borderIncrement = 1;
-							addBorder(el, blockLevel);
 						} else if(getLinebreakChildCount(el) === 0 && !parentBordered){
 							borderIncrement = 1;
-							addBorder(el, blockLevel);
 						}
 					} else if(getLinebreakChildCount(el.parentElement) > 0){
 						borderIncrement = 1;
-						addBorder(el, blockLevel);
 					}
 
 					childValue = traverseDOMTree(el, getValidChildCount(el) > 1,
@@ -148,6 +165,52 @@ function traverseDOMTree(root, border, parentBordered, blockLevel) { //traverse 
 	}
 
 	return nodeValue;
+}
+
+function getText(node){
+    if(node.nodeType === Node.TEXT_NODE){
+        if(node.nodeValue && node.nodeValue.trim() !== ''){
+            return node.nodeValue.trim().toLowerCase();
+        }
+
+        return '';
+    }
+
+    var text = '';
+    for (var i = 0; i < node.childNodes.length; i++){
+		var child = node.childNodes[i];
+
+        if(child.nodeType === Node.TEXT_NODE){
+            if(child.nodeValue && child.nodeValue.trim() !== ''){
+                text += child.nodeValue.trim().toLowerCase();
+            }
+        }
+    }
+
+    return text;
+}
+
+function getWordCount(node){
+    if(node.sgmWordCount){
+		return node.sgmWordCount;
+	}
+
+    if(node.nodeType === Node.TEXT_NODE){
+        if(node.nodeValue && node.nodeValue.trim() !== ''){
+            return node.nodeValue.trim().split(' ').length;
+        }
+
+        return 0;
+    }
+
+    var wordCount = 0;
+    for (var i = 0; i < node.childNodes.length; i++){
+		var el = node.childNodes[i];
+        wordCount += getWordCount(el);
+    }
+
+    node.sgmWordCount = wordCount;
+    return wordCount;
 }
 
 function deepCopy(obj){
@@ -181,14 +244,6 @@ function printProperties(obj){
 			//console.log(prop + ': ' + obj[prop]);
 		}
 	});*/
-}
-
-function addBorder(el, blockLevel){
-	//if(blockLevel === 5){
-	el.style.borderWidth = '1px';
-	el.style.borderStyle = 'solid';
-	el.style.borderColor = colors[blockLevel % 10];
-	//}
 }
 
 function getValidChildCount(parentNode){

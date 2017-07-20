@@ -22,10 +22,18 @@ function segment(rootNode, width, height){
     screenWidth = width;
     screenHeight = height;
 
-	return blockExtraction(new Block({
-        tagName: 'BODY',
-        xpath: 'BODY',
-        name: 'VB.1', children:[]}), new Node(rootNode), 1);
+    var node = new Node(rootNode);
+    var block = new Block(
+        {
+            tagName: 'BODY',
+            xpath: 'BODY',
+            role: 'BODY',
+            name: 'VB.1',
+            children:[]
+        },
+        node
+    );
+	return blockExtraction(block, node, 1);
 }
 
 function handleSingleChild(block, node){
@@ -44,13 +52,11 @@ function handleSingleChild(block, node){
 }
 
 function blockExtraction(block, currentNode, doc) {
-    if(! currentNode){
+    if(! currentNode || currentNode.isTextNode()){
 		return;
 	}
 
-	if (currentNode.isTextNode()) {
-		// no block
-	} else if (currentNode.hasSingleChild()) {
+	if (currentNode.hasSingleChild()) {
 		return handleSingleChild(block, currentNode);
 	} else {
 		// block has more than one children

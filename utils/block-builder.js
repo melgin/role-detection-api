@@ -20,13 +20,18 @@ function putIntoPool(parentBlock, node, doc, callback){
         }
     }
 
-    var block = new Block({
-        doc: doc,
-        tagName: node.getTagName(),
-        xpath: node.getXPath(),
-        name: parentBlock.getName() + '.' + (parentBlock.getChildCount() + 1),
-        children: []
-    });
+    var block = new Block (
+        {
+            doc: doc,
+            tagName: node.getTagName(),
+            xpath: node.getXPath(),
+            role: 'Unknown',
+            name: parentBlock.getName() + '.' + (parentBlock.getChildCount() + 1),
+            children: [],
+            order: parentBlock.getChildCount() + 1
+        },
+        node
+    );
 
     parentBlock.addChild(block);
 
@@ -104,14 +109,8 @@ function handleDifferentBgColorAtChildren(block, node, doc, callback){
         return putIntoPool(block, node, doc, callback);
     }
 
-    var tempBackground;
-    if(node.isCompositeNode()){
-        tempBackground = node.getChildAt(0).getAttributes().background;
-    } else {
-        tempBackground = node.getAttributes().background;
-    }
-
-    var compositeNode = node.getNewCompositeNode(),
+    var tempBackground = node.getBackground(),
+        compositeNode = node.getNewCompositeNode(),
         compositeNodeList = [];
 
     for(var i = 0; i < node.getChildCount(); i++){
@@ -120,11 +119,9 @@ function handleDifferentBgColorAtChildren(block, node, doc, callback){
 
         if(childBackground !== tempBackground){
             if(compositeNode.hasChild()){
-                //compositeNodeList.push(compositeNode);
                 createCompositeBlock(block, compositeNode, doc, true, callback);
             }
 
-            //tempBackground = childBackground;
             putIntoPool(block, child, doc, callback);
             compositeNode = node.getNewCompositeNode();
         } else {
@@ -133,7 +130,6 @@ function handleDifferentBgColorAtChildren(block, node, doc, callback){
     }
 
     if(compositeNode.hasChild()){
-        //compositeNodeList.push(compositeNode);
         createCompositeBlock(block, compositeNode, doc, true, callback);
     }
 
@@ -163,60 +159,36 @@ function handleDifferentFontSize(block, node, doc, callback){
     var maxFontSize = node.getMaxFontSizeInChildren(),
         compositeNode = node.getNewCompositeNode(),
         i = null,
-        flag = null,
-        childFontSize = null, child = null;
+        childFontSize = null,
+        child = null;
 
-	if (parseInt(node.getChildAt(0).getMaxFontSize()) === maxFontSize) {
+	if (node.getChildAt(0).getMaxFontSize() === maxFontSize) {
 		/* First child has the maximum font size. */
 		var count = node.getCountOfChildrenWithMaxFontSize(maxFontSize);
-
-		if (count == 1) {
-			/* There is only one child with maximum font size
-			 * Put the first child into pool and create a composite
-			 * node for the remaining */
-			putIntoPool(block, node.getChildAt(0), 11, callback);
-
-            if(node.getChildCount() === 2){
-                putIntoPool(block, node.getChildAt(1), 11, callback);
-            } else {
-                for (i = 1; i < node.getChildCount(); i++) {
-    				compositeNode.addChild(node.getChildAt(i));
-    			}
-    			createCompositeBlock(block, compositeNode, 10, true, callback);
-            }
+		if (count === 1) {
+            /* There is only one child with maximum font size
+             * Put the first child into pool and create a composite
+             * node for the remaining */
+			processSingleChildWithMaxFontSize();
 		} else if (node.areAllMaxFontSizeChildrenAtFront(count, maxFontSize)) {
-			/* First n children have the maximum font size
-			 * where n is equal to the number of children
-			 * with maximum font size. */
-			var compositeNode2 = node.getNewCompositeNode(),
-                compositeNode3 = node.getNewCompositeNode();
-
-			/* Create a composite node for the children with max. font size. */
-			for (i = 0; i < count; i++) {
-				compositeNode2.addChild(node.getChildAt(i));
-			}
-
-			/* Create a composite node for the others. */
-			for (i = count; i < node.getChildCount(); i++) {
-				compositeNode3.addChild(node.getChildAt(i));
-			}
-
-			createCompositeBlock(block, compositeNode2, 10, true, callback);
-			createCompositeBlock(block, compositeNode3, 10, true, callback);
+            /* First n children have the maximum font size
+             * where n is equal to the number of children
+             * with maximum font size. */
+			processMultipleMaxFontSizeInFront();
 		} else {
 			/* The first child has maximum font size and there are some
 			 * other children which have max. font size. */
 			processChildrenWithDifferentFontSize();
 		}
 	} else {
-		/* First child does not have the maximum font size*/
+		/* First child does not have the maximum font size */
 		processChildrenWithDifferentFontSize();
 	}
 
     node.removeAllChildren();
 
     function processChildrenWithDifferentFontSize(){
-        flag = true;
+        var flag = true;
 		for (i = 0; i < node.getChildCount(); i++) {
 			child = node.getChildAt(i);
             childFontSize = child.getMaxFontSize();
@@ -235,6 +207,37 @@ function handleDifferentFontSize(block, node, doc, callback){
 		}
 
 		createCompositeBlock(block, compositeNode, 8, true, callback);
+    }
+
+    function processSingleChildWithMaxFontSize(){
+        putIntoPool(block, node.getChildAt(0), 11, callback);
+
+        if(node.getChildCount() === 2){
+            putIntoPool(block, node.getChildAt(1), 11, callback);
+        } else {
+            for (i = 1; i < node.getChildCount(); i++) {
+                compositeNode.addChild(node.getChildAt(i));
+            }
+            createCompositeBlock(block, compositeNode, 10, true, callback);
+        }
+    }
+
+    function processMultipleMaxFontSizeInFront(){
+        var compositeNode2 = node.getNewCompositeNode(),
+            compositeNode3 = node.getNewCompositeNode();
+
+        /* Create a composite node for the children with max. font size. */
+        for (i = 0; i < count; i++) {
+            compositeNode2.addChild(node.getChildAt(i));
+        }
+
+        /* Create a composite node for the others. */
+        for (i = count; i < node.getChildCount(); i++) {
+            compositeNode3.addChild(node.getChildAt(i));
+        }
+
+        createCompositeBlock(block, compositeNode2, 10, true, callback);
+        createCompositeBlock(block, compositeNode3, 10, true, callback);
     }
 }
 

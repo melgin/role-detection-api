@@ -368,13 +368,30 @@ Node.prototype.getXPath = function(){
     return this.node.xpath;
 }
 
+Node.prototype.getBackground = function(){
+    if(this.isCompositeNode()){
+        return this.getChildAt(0).getAttributes().background;
+    } else {
+        return this.getAttributes().background;
+    }
+}
+
 Node.prototype.getNewCompositeNode = function(){
     return new Node({children: [], isCompositeNode: true,
-        tagName: "COMPOSITE", xpath: this.node.xpath + '/COMPOSITE'});
+        tagName: "COMPOSITE", xpath: this.node.xpath + '/COMPOSITE',
+        attributes: {wordCount: 0}});
 }
 
 Node.prototype.addChild = function(child){
     this.node.children.push(child.getNode());
+
+    if(this.node.isCompositeNode){
+        if(! this.node.attributes){
+            this.node.attributes = {wordCount: 0};
+        }
+
+        this.node.attributes.wordCount += child.getNode().attributes.wordCount;
+    }
 }
 
 Node.prototype.getChildCount = function(){
