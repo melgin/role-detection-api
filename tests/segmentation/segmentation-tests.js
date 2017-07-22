@@ -225,7 +225,7 @@ describe('segment->handleDifferentFloat', function() {
     var dom = JSON.parse(fs.readFileSync('./tests/data/float-data.json', 'utf8')),
         block = segmenter.segment(dom, 1920, 1080);
 
-    it('segment(node) should divide the nodes with respect to top and bottom margins', function() {
+    it('segment(node) should divide the nodes with respect to floats', function() {
         expect(block.getTreeHierarchy()).to.equal("BODY[DIV[COMPOSITE[DIV,DIV],DIV,DIV]," +
         "DIV[DIV,DIV,COMPOSITE[DIV,DIV]]," +
         "DIV[DIV,COMPOSITE[DIV,DIV,DIV]]," +

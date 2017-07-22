@@ -23,6 +23,7 @@ function process(req, res){
 	var url = req.body.url,
         width = +req.body.width ? req.body.width : 1920,
         height = +req.body.height ? req.body.height : 1920,
+		explainRoles = req.body.explainRoles,
         agent = req.body.userAgent,
         t0 = 0,
         t1 = 0,
@@ -55,11 +56,14 @@ function process(req, res){
     var horseman = new Horseman({phantomPath: config.phantomjsPath});
 
     t0 = Date.now();
-
+	
     horseman
         .userAgent(agent)
         .viewport(width, height)
         .open(url)
+		.then(function () {
+			t1 = Date.now();
+		})
         .on('consoleMessage', function( msg ){
             console.log(msg);
         })
@@ -74,8 +78,6 @@ function process(req, res){
                 fontColor = null,
                 fontSize = null;
 
-            t1 = Date.now();
-
             if(nodeTree){
                 pageWidth = nodeTree.attributes.width;
                 pageHeight = nodeTree.attributes.height;
@@ -87,7 +89,7 @@ function process(req, res){
             t2 = Date.now();
 
 			if(blockTree){
-				roleDetector.detectRoles(blockTree, pageWidth, pageHeight, fontSize, fontColor, sendResponse);
+				roleDetector.detectRoles(blockTree, pageWidth, pageHeight, fontSize, fontColor, explainRoles, sendResponse);
 			} else {
                 sendResponse(blockTree);
             }
@@ -105,4 +107,6 @@ function process(req, res){
                 "result": block.toJson()
             }));
         }
+		
+	
 }

@@ -65,28 +65,28 @@ Block.prototype.setRole = function(role){
     this.block.role = role;
 }
 
+Block.prototype.setScore = function(score){
+    this.block.score = score;
+}
+
+Block.prototype.setOverallScores = function(score){
+    this.block.overallScores = score;
+}
+
+Block.prototype.setReason = function(reason){
+    this.block.reason = reason;
+}
+
 Block.prototype.getRole = function(){
     return this.block.role;
 }
 
 Block.prototype.setParentRole = function(parentRole){
-    this.parentRole = parentRole;
-}
-
-Block.prototype.getWidth = function(){
-    if(this.node && this.node.attributes){
-        return this.node.attributes.width;
-    }
-
-    return 0;
-}
-
-Block.prototype.getHeight = function(){
-    if(this.node && this.node.attributes){
-        return this.node.attributes.height;
-    }
-
-    return 0;
+	if(parentRole){
+		this.parentRole = parentRole.toLowerCase();
+	} else {
+		this.parentRole = '';
+	}
 }
 
 Block.prototype.getAsFact = function(pageWidth, pageHeight, fontSize, fontColor){
@@ -96,11 +96,11 @@ Block.prototype.getAsFact = function(pageWidth, pageHeight, fontSize, fontColor)
         "hasId": getIdentifierFeatures(this.getNode()),
         "hasTag": tagName,
         "mustHaveTag": tagName,
-		"isComposite": this.getNode().isCompositeNode,
+		"isComposite": this.getNode().isCompositeNode ? 1 : 0,
 		"hasSize": getSize(this.getNode()),
 		"hasOrder": this.order,
-		"isAtomic": this.getChildCount() === 0 ? 0 : 1,
-		"inPosition": getPositionX(this.getNode()) + ',' + getPositionY(this.getNode()),
+		"isAtomic": this.getChildCount() === 0 ? 1 : 0,
+		"inPosition": getPositionX(this.getNode()) + ', ' + getPositionY(this.getNode()),
 		"fontSize": checkFontSize(this.getNode()),
 		"border": checkBorder(this.getNode()),
 		"fontColor": checkFontColor(this.getNode()),
@@ -114,8 +114,8 @@ Block.prototype.getAsFact = function(pageWidth, pageHeight, fontSize, fontColor)
 		"fontWeight": checkFontWeight(this.getNode()),
 
         "hasKeyword": getText(this.getNode()),
-		"hasChild": "",
-		"hasSibling": ""
+		"hasChild": "", //TODO
+		"hasSibling": "" //TODO
     };
 
     function getIdentifierFeatures(node){
@@ -159,7 +159,7 @@ Block.prototype.getAsFact = function(pageWidth, pageHeight, fontSize, fontColor)
     function getInnerTagNames(node){
         var tagName = node.tagName ? node.tagName.toLowerCase() : '';
         if(! node.children || node.children.length === 0){
-            return tagName;
+            return '|' + tagName + '|';
         }
 
         var childList = [];
@@ -168,7 +168,7 @@ Block.prototype.getAsFact = function(pageWidth, pageHeight, fontSize, fontColor)
             childList.push(getInnerTagNames(child));
         });
 
-        return tagName + ',' + childList.join();
+        return '|' + tagName + '|,' + childList.join();
     }
 
     function getWordCount(node){
@@ -248,9 +248,13 @@ Block.prototype.getAsFact = function(pageWidth, pageHeight, fontSize, fontColor)
 
         var attributes = existingAttributes.join();
 
-        if(node.children.length > 0){
+        if(node.children && node.children.length > 0){
             node.children.forEach(function(child){
-                attributes += ',' + getAttributes(child);
+				var childAttributes = getAttributes(child);
+				
+				if(childAttributes && childAttributes.trim() !== ''){
+					attributes += ',' + getAttributes(child);
+				}
             });
         }
 
@@ -259,7 +263,7 @@ Block.prototype.getAsFact = function(pageWidth, pageHeight, fontSize, fontColor)
 
     function checkListStyle(node){
         if(! node.attributes){
-            return '';
+            return 0;
         }
 
         if(! node.attributes.listStyle){
@@ -337,22 +341,22 @@ Block.prototype.getAsFact = function(pageWidth, pageHeight, fontSize, fontColor)
     }
 
     function checkBorder(node){
-        if(! node.attributes || ! node.attributes.border){
-            return 0;
-        }
+        if(node.attributes){
+			var borderTypeList = ['borderBottom', 'borderLeft', 'borderTop', 'borderRight'];
+			for(var i = 0; i < borderTypeList.length; i++){
+				var borderType = borderTypeList[i];
 
-        var borderTypeList = ['borderBottom', 'borderLeft', 'borderTop', 'borderRight'];
-        for(var i = 0; i < borderTypeList.length; i++){
-            var borderType = borderTypeList[i];
+				if(node.attributes[borderType]){
+					var segments = node.attributes[borderType].split(' ');
 
-            var segments = node.attributes[borderType].split(' ');
+					if(parseInt(segments[0]) > 0 && segments[1] !== 'none'){
+						return 1;
+					}
+				}
+			}
+		}
 
-            if(parseInt(segments[0]) > 0 && segments[1] !== 'none'){
-                return 1;
-            }
-        }
-
-        if(node.children.length > 0){
+        if(node.children && node.children.length > 0){
             for(i = 0; i < node.children.length; i++){
                 if(checkBorder(node.children[i]) === 1){
                     return 1;
@@ -420,7 +424,7 @@ Block.prototype.getAsFact = function(pageWidth, pageHeight, fontSize, fontColor)
 
         var text = node.attributes.text;
 
-        if(node.children.length > 0){
+        if(node.children && node.children.length > 0){
             node.children.forEach(function(child){
                 text += ' ' + getText(child);
             });

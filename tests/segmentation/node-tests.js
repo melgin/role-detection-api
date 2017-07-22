@@ -3,6 +3,18 @@ var chai = require('chai'),
     Node = require('./../../dom-node'),
     fs = require('fs');
 
+describe('containsImage', function(){
+	it('node.containsImage should return false if node does not contain an image', function() {
+        var node = new Node({tagName: 'DIV', containsImage: false});
+        expect(node.containsImage()).to.equal(false);
+    });
+	
+	it('node.containsImage should return true if node contains an image', function() {
+        var node = new Node({tagName: 'DIV', containsImage: true});
+        expect(node.containsImage()).to.equal(true);
+    });
+})
+	
 describe('containsEmptyListItem', function() {
     it('containsEmptyListItem(node) should return false if node tag is not UL', function() {
         var node = new Node({tagName: 'DIV'});

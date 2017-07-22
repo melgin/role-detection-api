@@ -1,5 +1,4 @@
 {
 	"phantomjsPath": "..\\bin\\phantomjs.exe",
-	"takeScreenshot": false,
 	"port": 8081
 }
