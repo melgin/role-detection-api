@@ -312,11 +312,11 @@ function getLinebreakChildCount(parentNode){
 
 function getPathTo(element) {
 	if (element.id!==''){
-        return 'id("'+element.id+'")';
+        return '//*[@id=\'' + element.id + '\']';
     }
 
 	if (element===document.body){
-        return element.tagName;
+        return 'HTML/' + element.tagName;
     }
 
 	var ix= 0;
