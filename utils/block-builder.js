@@ -28,7 +28,11 @@ function putIntoPool(parentBlock, node, doc, callback){
             role: 'Unknown',
             name: parentBlock.getName() + '.' + (parentBlock.getChildCount() + 1),
             children: [],
-            order: parentBlock.getChildCount() + 1
+            order: parentBlock.getChildCount() + 1,
+			width: node.getAttributes().width,
+			height: node.getAttributes().height,
+			topX: node.getAttributes().positionX,
+			topY: node.getAttributes().positionY
         },
         node
     );
