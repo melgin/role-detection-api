@@ -19,7 +19,26 @@ function putIntoPool(parentBlock, node, doc, callback){
             node = child;
         }
     }
+	
+	var width = 0,
+		height = 0,
+		topX = 0,
+		topY = 0;
 
+	if(node.isCompositeNode()){
+		var location = node.getVirtualLocation();
+		
+		width = location.width;
+		height = location.height;
+		topX = location.topX;
+		topY = location.topY;
+	} else {
+		width = node.getAttributes().width;
+		height = node.getAttributes().height;
+		topX = node.getAttributes().positionX;
+		topY = node.getAttributes().positionY;
+	}
+		
     var block = new Block (
         {
             doc: doc,
@@ -29,10 +48,10 @@ function putIntoPool(parentBlock, node, doc, callback){
             name: parentBlock.getName() + '.' + (parentBlock.getChildCount() + 1),
             children: [],
             order: parentBlock.getChildCount() + 1,
-			width: node.getAttributes().width,
-			height: node.getAttributes().height,
-			topX: node.getAttributes().positionX,
-			topY: node.getAttributes().positionY
+			width: width,
+			height: height,
+			topX: topX,
+			topY: topY
         },
         node
     );

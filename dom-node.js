@@ -30,6 +30,38 @@ Node.prototype.getMaxFontSize = function() {
     return maxFontSize;
 };
 
+Node.prototype.getVirtualLocation = function(){
+	var minX = Number.MAX_SAFE_INTEGER,
+	    maxX = 0,
+	    minY = Number.MAX_SAFE_INTEGER,
+	    maxY = 0;
+	
+	for(var i = 0; i < this.getChildCount(); i++){
+		var child = this.getChildAt(i);
+		
+		if(child.isCompositeNode()){
+			var childLocation = child.getVirtualLocation();
+
+			minX = Math.min(minX, childLocation.topX);
+			maxX = Math.max(maxX, childLocation.topX + childLocation.width);
+			minY = Math.min(minY, childLocation.topY);
+			maxY = Math.max(maxY, childLocation.topY + childLocation.height);
+		} else {
+			minX = Math.min(minX, child.getAttributes().positionX);
+			maxX = Math.max(maxX, child.getAttributes().positionX + child.getAttributes().width);
+			minY = Math.min(minY, child.getAttributes().positionY);
+			maxY = Math.max(maxY, child.getAttributes().positionY + child.getAttributes().height);
+		}
+	}
+	
+	return {
+		width: maxX - minX,
+		height: maxY - minY,
+		topX: minX,
+		topY: minY
+	};
+}
+
 Node.prototype.getMaxFontSizeInChildren = function(){
     var maxFontSize = -1;
 
