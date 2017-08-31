@@ -428,11 +428,14 @@ function isVisible(el){
 		// do nothing
 	} else if(el.nodeName === 'OBJECT') {
 		// do nothing
+	} else if(el.nodeName === 'IFRAME') {
+		// do nothing
 	} else {
 		var isElementVisible = getValidChildCount(el) > 0;
 		el.sgmIsVisible = isElementVisible;
 
-		if(! isElementVisible && (style && style.backgroundImage && style.backgroundImage !== 'none')){
+		/* height check is added to prevent decorational nodes to be selected as valid blocks. */
+		if(! isElementVisible && (style && style.backgroundImage && style.backgroundImage !== 'none' && style.height > 40)){
 			isElementVisible = true;
 		}
 

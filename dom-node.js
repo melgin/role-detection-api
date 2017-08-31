@@ -47,10 +47,16 @@ Node.prototype.getVirtualLocation = function(){
 			minY = Math.min(minY, childLocation.topY);
 			maxY = Math.max(maxY, childLocation.topY + childLocation.height);
 		} else {
+			var childHeight = child.getAttributes().height;
+			if(childHeight === 0){
+				var childLocation = child.getVirtualLocation();
+				childHeight = childLocation.height;
+			}
+			
 			minX = Math.min(minX, child.getAttributes().positionX);
 			maxX = Math.max(maxX, child.getAttributes().positionX + child.getAttributes().width);
 			minY = Math.min(minY, child.getAttributes().positionY);
-			maxY = Math.max(maxY, child.getAttributes().positionY + child.getAttributes().height);
+			maxY = Math.max(maxY, child.getAttributes().positionY + childHeight);
 		}
 	}
 	

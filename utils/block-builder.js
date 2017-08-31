@@ -33,8 +33,13 @@ function putIntoPool(parentBlock, node, doc, callback){
 		topX = location.topX;
 		topY = location.topY;
 	} else {
-		width = node.getAttributes().width;
 		height = node.getAttributes().height;
+		if(height === 0){
+			var location = node.getVirtualLocation();
+			height = location.height;
+		}
+		
+		width = node.getAttributes().width;
 		topX = node.getAttributes().positionX;
 		topY = node.getAttributes().positionY;
 	}
