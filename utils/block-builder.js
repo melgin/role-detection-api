@@ -25,7 +25,7 @@ function putIntoPool(parentBlock, node, doc, callback){
 		topX = 0,
 		topY = 0;
 
-	if(node.isCompositeNode()){
+	if(node.isCompositeNode() || node.getAttributes().height === 0){
 		var location = node.getVirtualLocation();
 		
 		width = location.width;
@@ -33,13 +33,8 @@ function putIntoPool(parentBlock, node, doc, callback){
 		topX = location.topX;
 		topY = location.topY;
 	} else {
-		height = node.getAttributes().height;
-		if(height === 0){
-			var location = node.getVirtualLocation();
-			height = location.height;
-		}
-		
 		width = node.getAttributes().width;
+		height = node.getAttributes().height;
 		topX = node.getAttributes().positionX;
 		topY = node.getAttributes().positionY;
 	}

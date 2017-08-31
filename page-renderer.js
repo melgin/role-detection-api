@@ -360,7 +360,7 @@ function isVisible(el){
 		}
 
 		if(+el.offsetWidth === 0 && +el.offsetHeight === 0){
-			if(style.height === 'auto' && el.childNodes && el.childNodes.length > 0){
+			if(style.height === 'auto' && getValidChildCount(el) > 0){
 				el.sgmIsVisible = true;
 				return true;
 			}
@@ -435,7 +435,7 @@ function isVisible(el){
 		el.sgmIsVisible = isElementVisible;
 
 		/* height check is added to prevent decorational nodes to be selected as valid blocks. */
-		if(! isElementVisible && (style && style.backgroundImage && style.backgroundImage !== 'none' && style.height > 40)){
+		if(! isElementVisible && (style && style.backgroundImage && style.backgroundImage !== 'none' && el.offsetHeight > 40)){
 			isElementVisible = true;
 		}
 
