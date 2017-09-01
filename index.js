@@ -88,6 +88,8 @@ function process(req, res){
 
             t2 = Date.now();
 
+			blockTree.setLocationData();
+			
 			if(blockTree){
 				roleDetector.detectRoles(blockTree, pageWidth, pageHeight, fontSize, fontColor, explainRoles, sendResponse);
 			} else {

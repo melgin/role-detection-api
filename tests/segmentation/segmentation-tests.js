@@ -242,7 +242,7 @@ describe('segment', function() {
     it('segment(node) should divide the nodes with respect to specified rules (starter-template)', function() {
         expect(block.getTreeHierarchy()).to.equal(
             "BODY[NAV[DIV,DIV[LI,LI,LI]]," +
-                 "DIV[H1,P[TEXT,TEXT]]]");
+                 "DIV[H1,P]]");
     });
 });
 

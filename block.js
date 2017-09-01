@@ -89,6 +89,65 @@ Block.prototype.setParentRole = function(parentRole){
 	}
 }
 
+Block.prototype.setLocationData = function(){
+	var width = 0,
+		height = 0,
+		topX = 0,
+		topY = 0;
+	
+	if(this.node.isCompositeNode() || this.node.getAttributes().height === 0){
+		var location = this.getVirtualLocation();
+		
+		this.block.blockWidth = location.width;
+		this.block.blockHeight = location.height;
+		this.block.blockTopX = location.topX;
+		this.block.blockTopY = location.topY;
+	} else {
+		this.block.blockWidth = this.node.getAttributes().width;
+		this.block.blockHeight = this.node.getAttributes().height;
+		this.block.blockTopX = this.node.getAttributes().positionX;
+		this.block.blockTopY = this.node.getAttributes().positionY;
+	}
+	
+	for(var i = 0; i < this.getChildCount(); i++){
+		this.getChildAt(i).setLocationData();
+	}
+}
+
+Block.prototype.getVirtualLocation = function(){
+	var minX = Number.MAX_SAFE_INTEGER,
+	    maxX = 0,
+	    minY = Number.MAX_SAFE_INTEGER,
+	    maxY = 0;
+	
+	for(var i = 0; i < this.getChildCount(); i++){
+		var child = this.getChildAt(i);
+		
+		if(child.getNode().isCompositeNode || child.getNode().attributes.height === 0){
+			var childLocation = child.getVirtualLocation();
+
+			minX = Math.min(minX, childLocation.topX);
+			maxX = Math.max(maxX, childLocation.topX + childLocation.width);
+			minY = Math.min(minY, childLocation.topY);
+			maxY = Math.max(maxY, childLocation.topY + childLocation.height);
+		} else {
+			var attributes = child.getNode().attributes;
+			
+			minX = Math.min(minX, attributes.positionX);
+			maxX = Math.max(maxX, attributes.positionX + attributes.width);
+			minY = Math.min(minY, attributes.positionY);
+			maxY = Math.max(maxY, attributes.positionY + attributes.height);
+		}
+	}
+	
+	return {
+		width: maxX - minX,
+		height: maxY - minY,
+		topX: minX,
+		topY: minY
+	};
+}
+
 Block.prototype.getAsFact = function(pageWidth, pageHeight, fontSize, fontColor){
 	var tagName = getInnerTagNames(this.getNode());
 

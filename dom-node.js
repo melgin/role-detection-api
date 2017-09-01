@@ -127,6 +127,16 @@ Node.prototype.containsImage = function(){
 Node.prototype.areAllChildrenVirtualTextNodes = function() {
     var state = true;
     if(this.hasChild()){
+		this.node.children.forEach(function(child){
+            state = state && (child.tagName === 'BR' || +child.type === 3 /*Node.TEXT_NODE*/);
+        });
+		
+		if(state){
+			return true;
+		}
+		
+		state = true;
+		
         this.node.children.forEach(function(child){
             state = state && (child.inline || +child.type === 3 /*Node.TEXT_NODE*/);
         });
