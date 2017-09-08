@@ -1,6 +1,6 @@
 var RuleEngine = require('node-rules');
 var fs = require('fs');
-var rulesStore = fs.readFileSync('rules.json', 'utf8');
+//var rulesStore = fs.readFileSync('rules.json', 'utf8');
  
 var rules = [{
     "condition": function(R) {

@@ -1,3 +1,5 @@
+var rectUtil = require('./utils/rectangle-util');
+
 function Block(block, node) {
     this.block = block;
     this.node = node;
@@ -98,20 +100,47 @@ Block.prototype.setLocationData = function(){
 	if(this.node.isCompositeNode() || this.node.getAttributes().height === 0){
 		var location = this.getVirtualLocation();
 		
-		this.block.blockWidth = location.width;
-		this.block.blockHeight = location.height;
-		this.block.blockTopX = location.topX;
-		this.block.blockTopY = location.topY;
+		this.block.width = location.width;
+		this.block.height = location.height;
+		this.block.topX = location.topX;
+		this.block.topY = location.topY;
 	} else {
-		this.block.blockWidth = this.node.getAttributes().width;
-		this.block.blockHeight = this.node.getAttributes().height;
-		this.block.blockTopX = this.node.getAttributes().positionX;
-		this.block.blockTopY = this.node.getAttributes().positionY;
+		this.block.width = this.node.getAttributes().width;
+		this.block.height = this.node.getAttributes().height;
+		this.block.topX = this.node.getAttributes().positionX;
+		this.block.topY = this.node.getAttributes().positionY;
 	}
 	
 	for(var i = 0; i < this.getChildCount(); i++){
 		this.getChildAt(i).setLocationData();
 	}
+	
+	for(var i = 0; i < this.getChildCount(); i++){
+		for(var j = i + 1; j < this.getChildCount(); j++){
+			var b1 = this.getChildAt(i),
+				b2 = this.getChildAt(j);
+				
+			if(rectUtil.checkBlockIntersection(b1, b2)){
+				rectUtil.subtractBlock(b1, b2);
+			}
+		}
+	}
+}
+
+Block.prototype.getLocation = function(){
+	return {
+		width: this.block.width,
+		height: this.block.height,
+		topX: this.block.topX,
+		topY: this.block.topY
+	};
+}
+
+Block.prototype.setLocation = function(l){
+	this.block.width = l.width;
+	this.block.height = l.height;
+	this.block.topX = l.topX;
+	this.block.topY = l.topY;
 }
 
 Block.prototype.getVirtualLocation = function(){

@@ -137,6 +137,22 @@ Node.prototype.areAllChildrenVirtualTextNodes = function() {
 		
 		state = true;
 		
+		if(this.node.attributes && this.node.attributes.width <= 100){
+			this.node.children.forEach(function(child){
+				state = state && (child.inline || +child.type === 3 /*Node.TEXT_NODE*/ 
+					|| inlineNodes.indexOf(child.tagName) > -1 || (child.tagName === 'IMG' &&
+					child.attributes &&
+					child.attributes.width <= 30)
+					);
+			});
+			
+			if(state){
+				return true;
+			}
+		}
+		
+		state = true;
+		
         this.node.children.forEach(function(child){
             state = state && (child.inline || +child.type === 3 /*Node.TEXT_NODE*/);
         });

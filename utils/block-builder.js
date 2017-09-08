@@ -43,6 +43,7 @@ function putIntoPool(parentBlock, node, doc, callback){
         {
             doc: doc,
             tagName: node.getTagName(),
+			className: node.getNode().className,
             xpath: node.getXPath(),
             role: 'Unknown',
             name: parentBlock.getName() + '.' + (parentBlock.getChildCount() + 1),

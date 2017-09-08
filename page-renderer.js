@@ -12,7 +12,7 @@ var inlineNodes = ["A", "ABBR", "ACRONYM", "B", "BDO",
 var lineBreakTerminalNodes = ["IMG", "OBJECT", "AUDIO", "COMMAND", "EMBED",
 	"KEYGEN", "METER", "OUTPUT", "PROGRESS", "VIDEO"];
 
-function traverseDOMTree(root, border, parentBordered, blockLevel) { //traverse function
+function traverseDOMTree(root, border, parentBordered, blockLevel, parentZIndex) { //traverse function
 	if (! root) {
         return;
     }
@@ -55,7 +55,15 @@ function traverseDOMTree(root, border, parentBordered, blockLevel) { //traverse 
     }
 
 	var style = window.getComputedStyle(root);
+	var zIndex = null;
 	if(style){
+		if(style.zIndex === 'auto'){
+			zIndex = parentZIndex;
+		} else {
+			zIndex = style.zIndex;
+		}
+		
+		nodeValue.attributes.zIndex = zIndex;
 		nodeValue.attributes.fontSize = style.fontSize;
 		nodeValue.attributes.fontWeight = style.fontWeight;
 		nodeValue.attributes.fontColor = style.color;
@@ -119,12 +127,12 @@ function traverseDOMTree(root, border, parentBordered, blockLevel) { //traverse 
                     attributes: nodeValue.attributes ? deepCopy(nodeValue.attributes) : {}
                 };
 			} else if(el.nodeName === 'HTML') {
-				return traverseDOMTree(el, border, border, blockLevel);
+				return traverseDOMTree(el, border, border, blockLevel, zIndex);
 			} else if(el.nodeName === 'BODY') {
 				if(!el.style.backgroundColor){
 					el.style.backgroundColor = '#FFF';
 				}
-				return traverseDOMTree(el, border, border, blockLevel);
+				return traverseDOMTree(el, border, border, blockLevel, zIndex);
 			} else {
 				if(isVisible(el) && !isInvalidNode(el)){
 					var borderIncrement = 0,
@@ -147,7 +155,7 @@ function traverseDOMTree(root, border, parentBordered, blockLevel) { //traverse 
 					}
 
 					childValue = traverseDOMTree(el, getValidChildCount(el) > 1,
-                        border, blockLevel + borderIncrement);
+                        border, blockLevel + borderIncrement, zIndex);
 
                     childValue.inline = isInline;
                     childValue.lineBreak = ! isInline;
