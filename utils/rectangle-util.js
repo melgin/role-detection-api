@@ -20,6 +20,12 @@ function subtractBlock(b1, b2){
 	} else if(zIndex1 < zIndex2){
 		var l = subtract(b2.getLocation(), b1.getLocation());
 		b1.setLocation(l);
+	} else if(b1.getNode().type === 3){
+		var l = subtract(b2.getLocation(), b1.getLocation());
+		b2.setLocation(l);
+	} else if(b2.getNode().type === 3){
+		var l = subtract(b1.getLocation(), b2.getLocation());
+		b2.setLocation(l);
 	}
 }
 
