@@ -30,12 +30,45 @@ describe('checkIntersection', function(){
 	  width: 20
 	};
 	
+	var rectD = {
+	  topX: 30,
+	  topY: 10,
+	  width: 20,
+	  height: 20
+	};
+	
+	var rectE = {
+		width: 160,
+		height: 16,
+		topX: 595,
+		topY: 684
+	};
+	
+	var rectF = {
+		width: 160,
+		height: 80,
+		topX: 595,
+		topY: 700
+	};
+	
 	it('rectangleUtil.checkIntersection should return true if rectangles intersect', function() {
         expect(rectangleUtil.checkIntersection(rectA, rectB)).to.equal(true);
     });
 	
 	it('rectangleUtil.checkIntersection should return false if rectangles do not intersect', function() {
         expect(rectangleUtil.checkIntersection(rectA, rectC)).to.equal(false);
+    });
+	
+	it('rectangleUtil.checkIntersection should return false if rectangles do not intersect', function() {
+        expect(rectangleUtil.checkIntersection(rectA, rectD)).to.equal(false);
+    });
+	
+	it('rectangleUtil.checkIntersection should return false if rectangles do not intersect', function() {
+        expect(rectangleUtil.checkIntersection(rectE, rectF)).to.equal(false);
+    });
+	
+	it('rectangleUtil.checkIntersection should return false if rectangles do not intersect', function() {
+        expect(rectangleUtil.checkIntersection(rectF, rectE)).to.equal(false);
     });
 })
 
@@ -162,4 +195,24 @@ describe('subtractBlock', function(){
     });
 	
 	
+})
+
+describe('isImageBlock', function(){
+	var dom = JSON.parse(fs.readFileSync('./tests/data/avg.json', 'utf8')),
+        block = segmenter.segment(dom, 1920, 1080),
+		child = block.getChildAt(0).getChildAt(1).getChildAt(0).getChildAt(1);
+		
+	//VB.1.1.2.1.2
+	
+	it('block.isImageBlock should return true if blocks contains only image', function() {
+        expect(child.getName()).to.equal('VB.1.1.2.1.2');
+    });
+	
+	it('block.isImageBlock should return true if blocks contains only image', function() {
+        expect(child.isImageBlock()).to.equal(true);
+    });
+	
+	it('block.isImageBlock should return false if blocks does not contain only image', function() {
+        expect(child = block.getChildAt(0).getChildAt(1).isImageBlock()).to.equal(false);
+    });
 })

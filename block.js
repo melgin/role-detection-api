@@ -1,4 +1,5 @@
-var rectUtil = require('./utils/rectangle-util');
+var rectUtil = require('./utils/rectangle-util'),
+	Node = require('./dom-node');
 
 function Block(block, node) {
     this.block = block;
@@ -144,6 +145,10 @@ Block.prototype.setLocation = function(l){
 }
 
 Block.prototype.getVirtualLocation = function(){
+	if(this.getChildCount() === 0){
+		return this.getLocation();
+	}
+	
 	var minX = Number.MAX_SAFE_INTEGER,
 	    maxX = 0,
 	    minY = Number.MAX_SAFE_INTEGER,
@@ -175,6 +180,10 @@ Block.prototype.getVirtualLocation = function(){
 		topX: minX,
 		topY: minY
 	};
+}
+
+Block.prototype.isImageBlock = function(){
+	return new Node(this.getNode()).isImageNode();
 }
 
 Block.prototype.getAsFact = function(pageWidth, pageHeight, fontSize, fontColor){

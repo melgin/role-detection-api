@@ -8,25 +8,30 @@ function detectRoles(block, pageWidth, pageHeight, fontSize, fontColor, explainR
     R.fromJSON(rulesStore);
     //Now pass the fact on to the rule engine for results
     R.execute(block.getAsFact(pageWidth, pageHeight, fontSize, fontColor), function(result){
-    	var maxRole = "";
-    	var maxValue = -1;
-    	for (var role in result.roles) {
-            if (result.roles.hasOwnProperty(role)) {
-    			if(maxValue < result.roles[role]){
-    				maxValue = result.roles[role];
-    				maxRole = role;
-    			}
-            }
-        }
+		var maxRole = "";
+		
+		if(block.getRole() !== 'Unknown'){
+			maxRole = block.getRole();
+		} else {		
+			var maxValue = -1;
+			for (var role in result.roles) {
+				if (result.roles.hasOwnProperty(role)) {
+					if(maxValue < result.roles[role]){
+						maxValue = result.roles[role];
+						maxRole = role;
+					}
+				}
+			}
 
-    	block.setRole(maxRole);
-		if(explainRoles){
-			block.setReason(result.reason[maxRole]);
-			block.setScore(maxValue);
-			block.setOverallScores({
-				roles: result.roles,
-				reasons: result.reason
-			});
+			block.setRole(maxRole);
+			if(explainRoles){
+				block.setReason(result.reason[maxRole]);
+				block.setScore(maxValue);
+				block.setOverallScores({
+					roles: result.roles,
+					reasons: result.reason
+				});
+			}
 		}
 
         detectRolesOfChildren(block, pageWidth, pageHeight, fontSize, fontColor, explainRoles, callback);

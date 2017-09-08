@@ -6,6 +6,7 @@ download('http://emine.ncc.metu.edu.tr/survey/web/pages2/http/www.bbc.co.uk/', '
 download('http://emine.ncc.metu.edu.tr/survey/web/pages2/http/www.avg.com/us-en/index.html', './tests/data/avg.json', save);
 download('http://emine.ncc.metu.edu.tr/survey/web/pages2/http/www.babylon.com/', './tests/data/babylon.json', save);
 download('http://emine.ncc.metu.edu.tr/survey/web/pages2/http/www.apple.com/', './tests/data/apple.json', save);
+download('http://emine.ncc.metu.edu.tr/survey/web/pages2/http/uk.yahoo.com/', './tests/data/yahoo.json', save);
 	
 function download(url, fileName, callback){
 	var width = 1920,

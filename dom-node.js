@@ -124,6 +124,18 @@ Node.prototype.containsImage = function(){
     return this.node.containsImage;
 }
 
+Node.prototype.isImageNode = function(){
+	if(this.node.tagName === 'IMG'){
+		return true;
+	}
+	
+	if(this.node.children.length === 1){
+		return this.getChildAt(0).isImageNode();
+	}
+	
+    return false;
+}
+
 Node.prototype.areAllChildrenVirtualTextNodes = function() {
     var state = true;
     if(this.hasChild()){

@@ -90,7 +90,7 @@ function traverseDOMTree(root, border, parentBordered, blockLevel, parentZIndex)
 	} catch (e){
 
 	}
-
+	
 	for (var i = 0; i < root.childNodes.length; i++){
 		var el = root.childNodes[i];
 		var childValue = null;

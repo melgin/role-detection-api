@@ -1,9 +1,9 @@
 
 function checkIntersection(b1, b2){
-	return !(b2.topX > (b1.topX + b1.width) || 
-           (b2.topX + b2.width) < b1.topX || 
-           b2.topY > (b1.topY + b1.height) ||
-           (b2.topY + b2.height) < b1.topY);
+	return (b2.topX < (b1.topX + b1.width) && 
+           (b2.topX + b2.width) > b1.topX && 
+           b2.topY < (b1.topY + b1.height) &&
+           (b2.topY + b2.height) > b1.topY);
 }
 
 function checkBlockIntersection(b1, b2){
@@ -11,6 +11,14 @@ function checkBlockIntersection(b1, b2){
 }
 
 function subtractBlock(b1, b2){
+	if(b1.isImageBlock()){
+		return b1.setRole('BackgroundImage');
+	}
+	
+	if(b2.isImageBlock()){
+		return b2.setRole('BackgroundImage');
+	}
+	
 	var zIndex1 = b1.getNode().attributes.zIndex;
 	var zIndex2 = b2.getNode().attributes.zIndex;
 		
