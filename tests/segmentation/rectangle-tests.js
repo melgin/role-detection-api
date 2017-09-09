@@ -216,3 +216,72 @@ describe('isImageBlock', function(){
         expect(child = block.getChildAt(0).getChildAt(1).isImageBlock()).to.equal(false);
     });
 })
+
+
+describe('getIntersectionArea', function(){
+	
+	var rectA = {
+	  topX: 10,
+	  topY: 10,
+	  width: 30,
+	  height: 40
+	};
+	
+	var rectA2 = {
+	  topX: 10,
+	  topY: 10,
+	  width: 30,
+	  height: 40
+	};
+
+	var rectB = {
+	  topX: 30,
+	  topY: 0,
+	  width: 40,
+	  height: 80
+	};
+	
+	var rectB2 = {
+	  topX: 30,
+	  topY: 0,
+	  width: 40,
+	  height: 80
+	};
+
+	var rectC = {
+	  topX: 0,
+	  topY: 0,
+	  height: 100,
+	  width: 100
+	};
+	
+	var rectD = {
+	  topX: 100,
+	  topY: 100,
+	  height: 20,
+	  width: 20
+	};
+	
+	var rectX = { width: 1920, height: 40, topX: 0, topY: 0 };
+	var rectY = { width: 1920, height: 2831, topX: 0, topY: 0 };
+	
+	it('rectangleUtil.getIntersectionArea(rectA, rectB)', function() {
+		var r = rectangleUtil.getIntersectionArea(rectA, rectB);
+        expect(r).to.equal(400);
+    });
+	
+	it('rectangleUtil.getIntersectionArea(rectB, rectA)', function() {
+		var r = rectangleUtil.getIntersectionArea(rectB2, rectA);
+        expect(r).to.equal(400);
+    });
+	
+	it('rectangleUtil.getIntersectionArea(rectD, rectA)', function() {
+		var r = rectangleUtil.getIntersectionArea(rectD, rectA2);
+        expect(r).to.equal(0);
+    });
+	
+	it('rectangleUtil.getIntersectionArea(rectX, rectY)', function() {
+		var r = rectangleUtil.getIntersectionArea(rectX, rectY);
+        expect(r).to.equal(40*1920);
+    });
+})

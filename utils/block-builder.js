@@ -1,4 +1,5 @@
-var Block = require('../block');
+var Block = require('../block'),
+	Node = require('../dom-node');
 
 /**
  * Constructs a new block and put into the block pool
@@ -686,10 +687,11 @@ function createCompositeBlockWithFloat(block, compositeNode, doc, floatException
         var newBlock = putIntoPool(block, compositeNode, doc, null);
 
         compositeNode.getChildren().forEach(function(child){
-            if(child.getAttributes().float === 'none'){
-                putIntoPool(newBlock, child, 11, callback);
+			var childBlock = new Node(child);
+            if(childBlock.getAttributes().float === 'none'){
+                putIntoPool(newBlock, childBlock, 11, callback);
             } else {
-                createCompositeBlock(newBlock, child, 11, floatExceptionCheck, callback);
+                createCompositeBlock(newBlock, childBlock, 11, floatExceptionCheck, callback);
             }
         });
 	}

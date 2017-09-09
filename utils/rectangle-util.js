@@ -1,9 +1,16 @@
 
 function checkIntersection(b1, b2){
-	return (b2.topX < (b1.topX + b1.width) && 
-           (b2.topX + b2.width) > b1.topX && 
-           b2.topY < (b1.topY + b1.height) &&
-           (b2.topY + b2.height) > b1.topY);
+	return (b2.topX < (b1.topX + b1.width - 1) && 
+           (b2.topX + b2.width - 1) > b1.topX && 
+           b2.topY < (b1.topY + b1.height - 1) &&
+           (b2.topY + b2.height - 1) > b1.topY);
+}
+
+function getIntersectionArea(b1, b2){
+	var xOverlap = Math.max(0, Math.min(b1.topX + b1.width, b2.topX + b2.width) - Math.max(b1.topX, b2.topX));
+	var yOverlap = Math.max(0, Math.min(b1.topY + b1.height, b2.topY + b2.height) - Math.max(b1.topY, b2.topY));
+	
+	return xOverlap * yOverlap;
 }
 
 function checkBlockIntersection(b1, b2){
@@ -11,12 +18,16 @@ function checkBlockIntersection(b1, b2){
 }
 
 function subtractBlock(b1, b2){
-	if(b1.isImageBlock()){
-		return b1.setRole('BackgroundImage');
-	}
+	var intersectionArea = getIntersectionArea(b1, b2);
 	
-	if(b2.isImageBlock()){
-		return b2.setRole('BackgroundImage');
+	if(intersectionArea / b1.getArea >= 0.8 || intersectionArea / b2.getArea >= 0.8){
+		if(b1.isImageBlock()){
+			return b1.setRole('BackgroundImage');
+		}
+		
+		if(b2.isImageBlock()){
+			return b2.setRole('BackgroundImage');
+		}
 	}
 	
 	var zIndex1 = b1.getNode().attributes.zIndex;
@@ -71,6 +82,7 @@ function subtract(blockInFront, blockAtBack){
 }
 
 module.exports.checkIntersection = checkIntersection;
+module.exports.getIntersectionArea = getIntersectionArea;
 module.exports.checkBlockIntersection = checkBlockIntersection;
 module.exports.subtractBlock = subtractBlock;
 module.exports.subtract = subtract;

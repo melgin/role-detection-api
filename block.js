@@ -98,18 +98,24 @@ Block.prototype.setLocationData = function(){
 		topX = 0,
 		topY = 0;
 	
+	var location = this.getVirtualLocation();
 	if(this.node.isCompositeNode() || this.node.getAttributes().height === 0){
-		var location = this.getVirtualLocation();
-		
 		this.block.width = location.width;
 		this.block.height = location.height;
 		this.block.topX = location.topX;
 		this.block.topY = location.topY;
 	} else {
-		this.block.width = this.node.getAttributes().width;
-		this.block.height = this.node.getAttributes().height;
-		this.block.topX = this.node.getAttributes().positionX;
-		this.block.topY = this.node.getAttributes().positionY;
+		if(location.width * location.height * 0.8 > this.node.getAttributes().width * this.node.getAttributes().height){
+			this.block.width = location.width;
+			this.block.height = location.height;
+			this.block.topX = location.topX;
+			this.block.topY = location.topY;
+		} else {
+			this.block.width = this.node.getAttributes().width;
+			this.block.height = this.node.getAttributes().height;
+			this.block.topX = this.node.getAttributes().positionX;
+			this.block.topY = this.node.getAttributes().positionY;
+		}
 	}
 	
 	for(var i = 0; i < this.getChildCount(); i++){
@@ -135,6 +141,10 @@ Block.prototype.getLocation = function(){
 		topX: this.block.topX,
 		topY: this.block.topY
 	};
+}
+
+Block.prototype.getArea = function(){
+	return this.block.width * this.block.height;
 }
 
 Block.prototype.setLocation = function(l){
