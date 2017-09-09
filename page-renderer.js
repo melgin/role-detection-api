@@ -87,13 +87,13 @@ function traverseDOMTree(root, border, parentBordered, blockLevel, parentZIndex)
 	try {
 		nodeValue.attributes.positionX = root.getBoundingClientRect().left;
 		nodeValue.attributes.positionY = root.getBoundingClientRect().top;
-		
+		/*
 		if(style){
 			nodeValue.attributes.positionX += parseInt(style.marginLeft);
 			nodeValue.attributes.positionY += parseInt(style.marginTop);
 			nodeValue.attributes.width -= parseInt(style.marginLeft) + parseInt(style.marginRight);
 			nodeValue.attributes.height -= parseInt(style.marginTop) + parseInt(style.marginBottom);
-		}
+		}*/
 	} catch (e){
 
 	}
