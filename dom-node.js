@@ -31,6 +31,15 @@ Node.prototype.getMaxFontSize = function() {
 };
 
 Node.prototype.getVirtualLocation = function(){
+	if(this.getChildCount() === 0){
+		return {
+			width: this.getAttributes().width,
+			height: this.getAttributes().height,
+			topX: this.getAttributes().positionX,
+			topY: this.getAttributes().positionY
+		};
+	}
+	
 	var minX = Number.MAX_SAFE_INTEGER,
 	    maxX = 0,
 	    minY = Number.MAX_SAFE_INTEGER,
@@ -39,7 +48,7 @@ Node.prototype.getVirtualLocation = function(){
 	for(var i = 0; i < this.getChildCount(); i++){
 		var child = this.getChildAt(i);
 		
-		if(child.isCompositeNode()){
+		if(child.isCompositeNode() || child.getAttributes().height === 0){
 			var childLocation = child.getVirtualLocation();
 
 			minX = Math.min(minX, childLocation.topX);
@@ -48,10 +57,7 @@ Node.prototype.getVirtualLocation = function(){
 			maxY = Math.max(maxY, childLocation.topY + childLocation.height);
 		} else {
 			var childHeight = child.getAttributes().height;
-			if(childHeight === 0){
-				var childLocation = child.getVirtualLocation();
-				childHeight = childLocation.height;
-			}
+			
 			
 			minX = Math.min(minX, child.getAttributes().positionX);
 			maxX = Math.max(maxX, child.getAttributes().positionX + child.getAttributes().width);
@@ -133,9 +139,8 @@ Node.prototype.isImageNode = function(){
 		return this.getChildAt(0).isImageNode();
 	}
 	
-	if(this.node.type !== 3 && this.getChildCount() === 0){
-		return this.getAttributes().backgroundImage != null ||
-			this.getAttributes().backgroundColor != null;
+	if(this.node.isBackgroundImage){
+		return true;
 	}
 	
     return false;

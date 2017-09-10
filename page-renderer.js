@@ -454,7 +454,8 @@ function isVisible(el){
 		el.sgmIsVisible = isElementVisible;
 
 		/* height check is added to prevent decorational nodes to be selected as valid blocks. */
-		if(! isElementVisible && (style && style.backgroundImage && style.backgroundImage !== 'none' && el.offsetHeight > 0)){
+		if(! isElementVisible && (style && style.backgroundImage && style.backgroundImage !== 'none' && el.offsetHeight > 40)){
+			el.isBackgroundImage = true;
 			isElementVisible = true;
 		}
 

@@ -173,7 +173,7 @@ Block.prototype.setLocation = function(l){
 
 Block.prototype.getVirtualLocation = function(){
 	if(this.getChildCount() === 0){
-		return this.getLocation();
+		return new Node(this.getNode()).getVirtualLocation();
 	}
 	
 	var minX = Number.MAX_SAFE_INTEGER,
