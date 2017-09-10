@@ -18,9 +18,9 @@ function checkBlockIntersection(b1, b2){
 }
 
 function subtractBlock(b1, b2){
-	var intersectionArea = getIntersectionArea(b1, b2);
+	var intersectionArea = getIntersectionArea(b1.getLocation(), b2.getLocation());
 	
-	if(intersectionArea / b1.getArea >= 0.8 || intersectionArea / b2.getArea >= 0.8){
+	if(intersectionArea / b1.getArea() >= 0.8 || intersectionArea / b2.getArea() >= 0.8){
 		if(b1.isImageBlock()){
 			return b1.setRole('BackgroundImage');
 		}
@@ -45,6 +45,9 @@ function subtractBlock(b1, b2){
 	} else if(b2.getNode().type === 3){
 		var l = subtract(b1.getLocation(), b2.getLocation());
 		b2.setLocation(l);
+	} else {
+		b1.subtractPadding();
+		b2.subtractPadding();
 	}
 }
 

@@ -682,12 +682,18 @@ function createCompositeBlockWithFloat(block, compositeNode, doc, floatException
 	if (! compositeNode.hasChild()) {
 		return;
 	} else if (compositeNode.hasSingleChild()) {
-		createCompositeBlock(block, compositeNode.getChildAt(0), doc, floatExceptionCheck, callback);
+		var child = compositeNode.getChildAt(0);
+		if(child.isCompositeNode()){
+			createCompositeBlock(block, child, doc, floatExceptionCheck, callback);
+		} else {
+			putIntoPool(block, child, doc, null);
+		}
 	} else {
         var newBlock = putIntoPool(block, compositeNode, doc, null);
 
         compositeNode.getChildren().forEach(function(child){
 			var childBlock = new Node(child);
+			
             if(childBlock.getAttributes().float === 'none'){
                 putIntoPool(newBlock, childBlock, 11, callback);
             } else {

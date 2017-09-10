@@ -92,6 +92,23 @@ Block.prototype.setParentRole = function(parentRole){
 	}
 }
 
+Block.prototype.subtractPadding = function(){
+	if(this.paddingSubtracted === null || ! this.paddingSubtracted){
+		var attributes = this.getNode().attributes,
+			paddingLeft = attributes.paddingLeft ? parseInt(attributes.paddingLeft) : 0,
+			paddingTop = attributes.paddingTop ? parseInt(attributes.paddingTop) : 0,
+			paddingBottom = attributes.paddingBottom ? parseInt(attributes.paddingBottom) : 0,
+			paddingRight = attributes.paddingRight ? parseInt(attributes.paddingRight) : 0;
+
+		this.block.width -= paddingLeft + paddingRight;
+		this.block.topX += paddingLeft;
+		this.block.height -= paddingTop + paddingBottom;
+		this.block.topY += paddingTop;
+		
+		this.paddingSubtracted = true;
+	}
+}
+
 Block.prototype.setLocationData = function(){
 	var width = 0,
 		height = 0,
@@ -105,7 +122,7 @@ Block.prototype.setLocationData = function(){
 		this.block.topX = location.topX;
 		this.block.topY = location.topY;
 	} else {
-		if(location.width * location.height * 0.8 > this.node.getAttributes().width * this.node.getAttributes().height){
+		if(location.height * 0.8 > this.node.getAttributes().height){
 			this.block.width = location.width;
 			this.block.height = location.height;
 			this.block.topX = location.topX;
@@ -193,7 +210,7 @@ Block.prototype.getVirtualLocation = function(){
 }
 
 Block.prototype.isImageBlock = function(){
-	return new Node(this.getNode()).isImageNode();
+	return new Node(this.getNode()).isImageNode() && this.block.children.length === 0;
 }
 
 Block.prototype.getAsFact = function(pageWidth, pageHeight, fontSize, fontColor){

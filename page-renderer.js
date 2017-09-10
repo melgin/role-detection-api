@@ -73,6 +73,10 @@ function traverseDOMTree(root, border, parentBordered, blockLevel, parentZIndex)
 		nodeValue.attributes.marginRight = style.marginRight;
 		nodeValue.attributes.marginTop = style.marginTop;
 		nodeValue.attributes.marginBottom = style.marginBottom;
+		nodeValue.attributes.paddingLeft = style.paddingLeft;
+		nodeValue.attributes.paddingRight = style.paddingRight;
+		nodeValue.attributes.paddingTop = style.paddingTop;
+		nodeValue.attributes.paddingBottom = style.paddingBottom;
 		nodeValue.attributes.border = style.border;
         nodeValue.attributes.borderLeft = style.borderLeft;
         nodeValue.attributes.borderRight = style.borderRight;

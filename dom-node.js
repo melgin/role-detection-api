@@ -133,6 +133,11 @@ Node.prototype.isImageNode = function(){
 		return this.getChildAt(0).isImageNode();
 	}
 	
+	if(this.node.type !== 3 && this.getChildCount() === 0){
+		return this.getAttributes().backgroundImage != null ||
+			this.getAttributes().backgroundColor != null;
+	}
+	
     return false;
 }
 
