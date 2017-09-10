@@ -415,7 +415,7 @@ function isVisible(el){
 		}
 
 		if(style.textIndent){
-			if(style.textIndent !== '0px'){
+			if(style.textIndent !== '0px'&& !(style && style.backgroundImage && style.backgroundImage !== 'none' && el.offsetHeight > 0)){
 				if(parseInt(style.textIndent, 10) + el.offsetWidth < 0){
 					el.sgmInvisibilityReason = 'Text indent';
 					el.sgmIsVisible = false;
@@ -454,7 +454,7 @@ function isVisible(el){
 		el.sgmIsVisible = isElementVisible;
 
 		/* height check is added to prevent decorational nodes to be selected as valid blocks. */
-		if(! isElementVisible && (style && style.backgroundImage && style.backgroundImage !== 'none' && el.offsetHeight > 40)){
+		if(! isElementVisible && (style && style.backgroundImage && style.backgroundImage !== 'none' && el.offsetHeight > 0)){
 			isElementVisible = true;
 		}
 
