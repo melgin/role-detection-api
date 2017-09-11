@@ -35,16 +35,24 @@ function subtractBlock(b1, b2){
 		
 	if(zIndex1 > zIndex2){
 		var l = subtract(b1.getLocation(), b2.getLocation());
-		b2.setLocation(l);
+		if(l.height !== 0 && l.width !== 0){
+			b2.setLocation(l);
+		}
 	} else if(zIndex1 < zIndex2){
 		var l = subtract(b2.getLocation(), b1.getLocation());
-		b1.setLocation(l);
+		if(l.height !== 0 && l.width !== 0){
+			b1.setLocation(l);
+		}
 	} else if(b1.getNode().type === 3){
 		var l = subtract(b2.getLocation(), b1.getLocation());
-		b2.setLocation(l);
+		if(l.height !== 0 && l.width !== 0){
+			b2.setLocation(l);
+		}
 	} else if(b2.getNode().type === 3){
 		var l = subtract(b1.getLocation(), b2.getLocation());
-		b2.setLocation(l);
+		if(l.height !== 0 && l.width !== 0){
+			b2.setLocation(l);
+		}
 	} else {
 		b1.subtractPadding();
 		b2.subtractPadding();
