@@ -122,7 +122,7 @@ Block.prototype.setLocationData = function(){
 		this.block.topX = location.topX;
 		this.block.topY = location.topY;
 	} else {
-		if(location.height * 0.8 > this.node.getAttributes().height){
+		if(location.height * 0.8 > this.node.getAttributes().height && location.height < this.node.getAttributes().height * 20){
 			this.block.width = location.width;
 			this.block.height = location.height;
 			this.block.topX = location.topX;
