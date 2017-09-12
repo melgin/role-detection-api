@@ -34,30 +34,28 @@ function subtractBlock(b1, b2){
 	var zIndex2 = b2.getNode().attributes.zIndex;
 		
 	if(zIndex1 > zIndex2){
-		var l = subtract(b1.getLocation(), b2.getLocation());
-		
-		if(l.height !== 0 && l.width !== 0){
-			b2.setLocation(l);
-		}
+		subtractRecursive(b1.getLocation(), b2);
 	} else if(zIndex1 < zIndex2){
-		var l = subtract(b2.getLocation(), b1.getLocation());
-		
-		if(l.height !== 0 && l.width !== 0){
-			b1.setLocation(l);
-		}
+		subtractRecursive(b2.getLocation(), b1);
 	} else if(b1.getNode().type === 3){
-		var l = subtract(b2.getLocation(), b1.getLocation());
-		if(l.height !== 0 && l.width !== 0){
-			b2.setLocation(l);
-		}
+		subtractRecursive(b2.getLocation(), b1);
 	} else if(b2.getNode().type === 3){
-		var l = subtract(b1.getLocation(), b2.getLocation());
-		if(l.height !== 0 && l.width !== 0){
-			b2.setLocation(l);
-		}
+		subtractRecursive(b1.getLocation(), b2);
 	} else {
 		b1.subtractPadding();
 		b2.subtractPadding();
+	}
+}
+
+function subtractRecursive(location, b2){
+	var l = subtract(location, b2.getLocation());
+		
+	if(l.height !== 0 && l.width !== 0){
+		b2.setLocation(l);
+	}
+	
+	for(var i = 0; i < b2.getChildCount(); i++){
+		subtractRecursive(location, b2.getChildAt(i));
 	}
 }
 
