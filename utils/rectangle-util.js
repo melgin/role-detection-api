@@ -35,11 +35,13 @@ function subtractBlock(b1, b2){
 		
 	if(zIndex1 > zIndex2){
 		var l = subtract(b1.getLocation(), b2.getLocation());
+		
 		if(l.height !== 0 && l.width !== 0){
 			b2.setLocation(l);
 		}
 	} else if(zIndex1 < zIndex2){
 		var l = subtract(b2.getLocation(), b1.getLocation());
+		
 		if(l.height !== 0 && l.width !== 0){
 			b1.setLocation(l);
 		}
@@ -75,8 +77,11 @@ function subtract(blockInFront, blockAtBack){
 		var diff = r1 - l2;
 		blockAtBack.topX += diff;
 		blockAtBack.width -= diff;
+		return blockAtBack;
 	} else if(l2 <= l1 && l1 < r2 && r2 <= r1){
 		blockAtBack.width -= r2 - l1;
+		
+		return blockAtBack;
 	}
 	
 	if(t1 === t2 && b1 === b2) {
