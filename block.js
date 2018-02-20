@@ -104,51 +104,73 @@ Block.prototype.subtractPadding = function(){
 		this.block.topX += paddingLeft;
 		this.block.height -= paddingTop + paddingBottom;
 		this.block.topY += paddingTop;
-		
+
 		this.paddingSubtracted = true;
 	}
 }
 
 Block.prototype.setLocationData = function(){
-	var width = 0,
-		height = 0,
-		topX = 0,
-		topY = 0;
-	
 	var location = this.getVirtualLocation();
+
 	if(this.node.isCompositeNode() || this.node.getAttributes().height === 0){
 		this.block.width = location.width;
 		this.block.height = location.height;
 		this.block.topX = location.topX;
 		this.block.topY = location.topY;
 	} else {
-		if(location.height * 0.8 > this.node.getAttributes().height && location.height < this.node.getAttributes().height * 20){
+        var height = this.node.getAttributes().height;
+		if(location.height * 0.8 > height && location.height < height * 20){
 			this.block.width = location.width;
 			this.block.height = location.height;
 			this.block.topX = location.topX;
 			this.block.topY = location.topY;
 		} else {
 			this.block.width = this.node.getAttributes().width;
-			this.block.height = this.node.getAttributes().height;
+			this.block.height = height;
 			this.block.topX = this.node.getAttributes().positionX;
 			this.block.topY = this.node.getAttributes().positionY;
 		}
 	}
-	
-	for(var i = 0; i < this.getChildCount(); i++){
+
+    var i;
+	for(i = 0; i < this.getChildCount(); i++){
 		this.getChildAt(i).setLocationData();
 	}
-	
-	for(var i = 0; i < this.getChildCount(); i++){
+
+	for(i = 0; i < this.getChildCount(); i++){
 		for(var j = i + 1; j < this.getChildCount(); j++){
 			var b1 = this.getChildAt(i),
 				b2 = this.getChildAt(j);
-				
+
 			if(rectUtil.checkBlockIntersection(b1, b2)){
 				rectUtil.subtractBlock(b1, b2);
 			}
 		}
 	}
+}
+
+Block.prototype.getFullArea = function(){
+    return this.fullArea;
+}
+
+Block.prototype.calculateWhiteSpaceArea = function(){
+    if(this.getChildCount() === 0){
+        this.fullArea = this.block.width * this.block.height;
+        this.whiteSpace = 0;
+        this.block.whiteSpaceRatio = 0;
+    } else {
+        var i, totalChildrenArea = 0;
+
+    	for(i = 0; i < this.getChildCount(); i++){
+    		var child = this.getChildAt(i);
+            child.calculateWhiteSpaceArea();
+            totalChildrenArea += child.getFullArea();
+    	}
+
+        this.fullArea = totalChildrenArea;
+        this.whiteSpace = this.block.width * this.block.height - totalChildrenArea;
+        this.block.whiteSpaceRatio = this.whiteSpace / (this.block.width * this.block.height);
+    }
 }
 
 Block.prototype.getLocation = function(){
@@ -174,22 +196,22 @@ Block.prototype.setLocation = function(l){
 Block.prototype.getVirtualLocation = function(){
 	if(this.getChildCount() === 0){
 		var l = new Node(this.getNode()).getVirtualLocation();
-		
+
 		if(parseInt(l.height) === 0){
 			return this.getLocation();
 		}
-		
+
 		return l;
 	}
-	
+
 	var minX = Number.MAX_SAFE_INTEGER,
 	    maxX = 0,
 	    minY = Number.MAX_SAFE_INTEGER,
 	    maxY = 0;
-	
+
 	for(var i = 0; i < this.getChildCount(); i++){
 		var child = this.getChildAt(i);
-		
+
 		if(child.getNode().isCompositeNode || child.getNode().attributes.height === 0){
 			var childLocation = child.getVirtualLocation();
 
@@ -199,14 +221,14 @@ Block.prototype.getVirtualLocation = function(){
 			maxY = Math.max(maxY, childLocation.topY + childLocation.height);
 		} else {
 			var attributes = child.getNode().attributes;
-			
+
 			minX = Math.min(minX, attributes.positionX);
 			maxX = Math.max(maxX, attributes.positionX + attributes.width);
 			minY = Math.min(minY, attributes.positionY);
 			maxY = Math.max(maxY, attributes.positionY + attributes.height);
 		}
 	}
-	
+
 	return {
 		width: maxX - minX,
 		height: maxY - minY,
@@ -381,7 +403,7 @@ Block.prototype.getAsFact = function(pageWidth, pageHeight, fontSize, fontColor)
         if(node.children && node.children.length > 0){
             node.children.forEach(function(child){
 				var childAttributes = getAttributes(child);
-				
+
 				if(childAttributes && childAttributes.trim() !== ''){
 					attributes += ',' + getAttributes(child);
 				}
@@ -471,9 +493,11 @@ Block.prototype.getAsFact = function(pageWidth, pageHeight, fontSize, fontColor)
     }
 
     function checkBorder(node){
+        var i;
+
         if(node.attributes){
 			var borderTypeList = ['borderBottom', 'borderLeft', 'borderTop', 'borderRight'];
-			for(var i = 0; i < borderTypeList.length; i++){
+			for(i = 0; i < borderTypeList.length; i++){
 				var borderType = borderTypeList[i];
 
 				if(node.attributes[borderType]){

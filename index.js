@@ -56,7 +56,7 @@ function process(req, res){
     var horseman = new Horseman({phantomPath: config.phantomjsPath});
 
     t0 = Date.now();
-	
+
     horseman
         .userAgent(agent)
         .viewport(width, height)
@@ -89,9 +89,11 @@ function process(req, res){
             t2 = Date.now();
 
 			blockTree.setLocationData();
-			
+            blockTree.calculateWhiteSpaceArea();
+
 			if(blockTree){
-				roleDetector.detectRoles(blockTree, pageWidth, pageHeight, fontSize, fontColor, explainRoles, sendResponse);
+				roleDetector.detectRoles(blockTree, pageWidth, pageHeight, fontSize, fontColor,
+                    explainRoles, sendResponse);
 			} else {
                 sendResponse(blockTree);
             }
@@ -109,6 +111,6 @@ function process(req, res){
                 "result": block.toJson()
             }));
         }
-		
-	
+
+
 }
