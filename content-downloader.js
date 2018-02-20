@@ -32,6 +32,11 @@ function download(url, fileName, callback){
         .then(function (nodeTree) {
             callback(fileName, nodeTree);
         })
+		.pdf('./capture-' + fileName + '.pdf', {
+		  format: 'A4',
+		  orientation: 'portrait',
+		  margin: '0cm'
+		})
         .close();
 }
 
