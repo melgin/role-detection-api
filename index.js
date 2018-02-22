@@ -11,6 +11,7 @@ var fs = require('fs'),
 
 app.use(bodyParser.json());
 app.post('/', process);
+app.post('/visual-complexity', vicram);
 
 var server = app.listen(config.port, function () {
 	var host = server.address().address
@@ -111,6 +112,71 @@ function process(req, res){
                 "result": block.toJson()
             }));
         }
+}
 
+function vicram(req, res){
+	var url = req.body.url,
+        width = +req.body.width ? req.body.width : 1920,
+        height = +req.body.height ? req.body.height : 1920,
+        agent = req.body.userAgent,
+        t0 = 0,
+        t1 = 0;
 
+    if(agent){
+        agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0';
+    }
+
+	var sendErrorResponse = function(status, message){
+		res.writeHead(status, {'Content-Type': 'application/json'});
+		res.end(JSON.stringify({"success": false, "error": message}));
+	}
+
+	if(! urlValidator.isWebUri(url)){
+		logger.error("Invalid url:" + url);
+		return sendErrorResponse(400, "Invalid url!");
+	}
+
+	if(width < 0){
+		logger.error("Invalid width:" + width);
+		return sendErrorResponse(400, "Invalid width!");
+	}
+
+	if(height < 0){
+		logger.error("Invalid height:" + height);
+		return sendErrorResponse(400, "Invalid height!");
+	}
+
+    var horseman = new Horseman({phantomPath: config.phantomjsPath});
+
+    t0 = Date.now();
+
+    horseman
+        .userAgent(agent)
+        .viewport(width, height)
+        .open(url)
+		.then(function () {
+			t1 = Date.now();
+		})
+        .on('consoleMessage', function( msg ){
+            console.log(msg);
+        })
+        .injectJs('vicram.js')
+        .evaluate(function () {
+            return calculateVicramScore(document);
+        })
+        .then(function (vicramResponse) {
+            sendResponse(vicramResponse);
+        })
+        .close();
+
+        function sendResponse(vicramResponse){
+            var t2 = Date.now();
+            res.writeHead(200, {'Content-Type': 'application/json'});
+            res.end(JSON.stringify({
+                "success": true,
+                "renderingTime": t1 - t0,
+                "calculationTime": t2 - t1,
+                "result": vicramResponse
+            }));
+        }
 }

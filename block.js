@@ -150,13 +150,13 @@ Block.prototype.setLocationData = function(){
 }
 
 Block.prototype.getFullArea = function(){
-    return this.fullArea;
+    return this.block.fullArea;
 }
 
 Block.prototype.calculateWhiteSpaceArea = function(){
     if(this.getChildCount() === 0){
-        this.fullArea = this.block.width * this.block.height;
-        this.whiteSpace = 0;
+        this.block.fullArea = this.block.width * this.block.height;
+        this.block.whiteSpace = 0;
         this.block.whiteSpaceRatio = 0;
     } else {
         var i, totalChildrenArea = 0;
@@ -167,9 +167,9 @@ Block.prototype.calculateWhiteSpaceArea = function(){
             totalChildrenArea += child.getFullArea();
     	}
 
-        this.fullArea = totalChildrenArea;
-        this.whiteSpace = this.block.width * this.block.height - totalChildrenArea;
-        this.block.whiteSpaceRatio = this.whiteSpace / (this.block.width * this.block.height);
+        this.block.fullArea = totalChildrenArea;
+        this.block.whiteSpace = this.block.width * this.block.height - totalChildrenArea;
+        this.block.whiteSpaceRatio = this.block.whiteSpace / (this.block.width * this.block.height);
     }
 }
 
