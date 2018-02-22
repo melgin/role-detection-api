@@ -105,7 +105,9 @@ function countElements(el){
 	} else if(type === Node.DOCUMENT_NODE){
 		// recurse through the node to find the rest of the counters
 		for (var i = 0; i < el.childNodes.length; i++){
-			countElements(el.childNodes[i]);
+			if(el.childNodes[i].nodeType === Node.ELEMENT_NODE){
+				countElements(el.childNodes[i]);
+			}
 		}
 	} else if (type === Node.ELEMENT_NODE) {
 		// checks and counts the type of element
@@ -130,7 +132,7 @@ function countElements(el){
 		}
 
 		// recurse through the node to find the rest of the counters
-		if(! isTextEqualTo(nodeName, 'title') && ! isTextEqualTo(nodeName, 'script') && ! isTextEqualTo(nodeName, 'style') && ! isTextEqualTo(nodeName, 'noscript')){
+		if(! isTextEqualTo(nodeName, 'head') && ! isTextEqualTo(nodeName, 'title') && ! isTextEqualTo(nodeName, 'script') && ! isTextEqualTo(nodeName, 'style') && ! isTextEqualTo(nodeName, 'noscript')){
 			for (var i = 0; i < el.childNodes.length; i++){
 				countElements(el.childNodes[i]);
 			}
@@ -251,11 +253,15 @@ function countTLC(node){
 	var type = node.nodeType;
 	if (type == Node.DOCUMENT_NODE) {
 		for (var i = 0; i < el.childNodes.length; i++){
-			countTLC(el.childNodes[i]);
+			if(el.childNodes[i].nodeType === Node.ELEMENT_NODE){
+				countTLC(el.childNodes[i]);
+			}
 		}
-	}
-	
-	if (type === Node.ELEMENT_NODE) {
+	} else if (type === Node.ELEMENT_NODE) {
+		if(isTextEqualTo(node.nodeName, 'head') ){
+			return 0;
+		}
+		
 		var style = window.getComputedStyle(node);
 		
 		if (style) {
