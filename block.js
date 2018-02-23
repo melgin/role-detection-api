@@ -42,6 +42,48 @@ Block.prototype.getDoc = function(){
     return this.block.doc;
 }
 
+Block.prototype.getOverallBlockCount = function(){
+	if(! this.block.children || this.block.children.length === 0){
+		return 1;
+	}
+	
+	var cummulativeBlockCount = 0;
+	
+	this.children.forEach(function(child){
+		cummulativeBlockCount += child.getOverallBlockCount();
+	});
+	
+	return cummulativeBlockCount + 1;
+}
+
+Block.prototype.getOverallLeafCount = function(){
+	if(! this.block.children || this.block.children.length === 0){
+		return 1;
+	}
+
+	var cummulativeBlockCount = 0;
+	
+	this.children.forEach(function(child){
+		cummulativeBlockCount += child.getOverallLeafCount();
+	});
+		
+	return cummulativeBlockCount;
+}
+
+Block.prototype.getDepth = function(){
+	if(! this.block.children || this.block.children.length === 0){
+		return 1;
+	}
+	
+	var depth = 0;
+	
+	this.children.forEach(function(child){
+		depth = Math.max(depth, child.getDepth());
+	});
+	
+	return depth + 1;
+}
+
 Block.prototype.getTreeHierarchy = function(){
     if(! this.block.children || this.block.children.length === 0){
         return this.block.tagName;

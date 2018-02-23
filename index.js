@@ -120,7 +120,11 @@ function vicram(req, res){
         height = +req.body.height ? req.body.height : 1920,
         agent = req.body.userAgent,
         t0 = 0,
-        t1 = 0;
+        t1 = 0,
+		tlc = null,
+		imageCount = null,
+		wordCount = null,
+		errorMessage = null;
 
     if(agent){
         agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0';
@@ -150,24 +154,76 @@ function vicram(req, res){
 
     t0 = Date.now();
 
-    horseman
-        .userAgent(agent)
-        .viewport(width, height)
-        .open(url)
-		.then(function () {
-			t1 = Date.now();
-		})
-        .on('consoleMessage', function( msg ){
-            console.log(msg);
-        })
-        .injectJs('vicram.js')
-        .evaluate(function () {
-            return calculateVicramScore(document);
-        })
-        .then(function (vicramResponse) {
-            sendResponse(vicramResponse);
-        })
-        .close();
+	try {
+		horseman
+			.userAgent(agent)
+			.viewport(width, height)
+			.open(url)
+			.then(function () {
+				console.log('Opened the document');
+				t1 = Date.now();
+			})
+			.on('consoleMessage', function( msg ){
+				console.log(msg);
+			})
+			.on('error', function( msg, trace ){
+				console.log(msg);
+				return sendErrorResponse(500, msg);
+			})
+			.injectJs('vicram.js')
+			.injectJs('page-renderer.js')
+			.evaluate(function () {
+				console.log('Evaluating');
+				return calculateVicramScore(document);
+			})
+			.then(function (vicramResponse) {
+				errorMessage = vicramResponse.err;
+				tlc = vicramResponse.tlc;
+				imageCount = vicramResponse.imageCount;
+				wordCount = vicramResponse.wordCount;
+			})
+			.evaluate(function () {
+				return traverseDOMTree(document, true, null, 0);
+			})
+			.then(function (nodeTree) {
+				var blockTree = null,
+					pageWidth = 0,
+					pageHeight = 0,
+					fontColor = null,
+					fontSize = null;
+
+				if(nodeTree){
+					pageWidth = nodeTree.attributes.width;
+					pageHeight = nodeTree.attributes.height;
+					fontColor = nodeTree.attributes.fontColor;
+					fontSize = nodeTree.attributes.fontSize;
+					blockTree = pageSegmenter.segment(nodeTree, width, height);
+				}
+
+				t2 = Date.now();
+
+				var numberOfBlocks = blockTree.getOverallBlockCount();
+				var numberOfLeaves = blockTree.getOverallLeafCount();
+				var depth = blockTree.getDepth();
+				
+				if(errorMessage){
+					return sendErrorResponse(500, errorMessage);
+				}
+				
+				sendResponse({
+					vicram: calculateVcs(tlc, wordCount, imageCount),
+					numberOfBlocks: calculateVcs(numberOfBlocks, wordCount, imageCount),
+					numberOfLeaves: calculateVcs(numberOfLeaves, wordCount, imageCount),
+					depth: calculateVcs(depth, wordCount, imageCount)
+				});
+			})
+			.catch(function (err, o) {
+				return sendErrorResponse(500, err.message);
+			})
+			.close();
+		} catch (err){
+			return sendErrorResponse(500, err);
+		}
 
         function sendResponse(vicramResponse){
             var t2 = Date.now();
@@ -179,4 +235,14 @@ function vicram(req, res){
                 "result": vicramResponse
             }));
         }
+}
+
+function calculateVcs(block, wordCount, imageCount){
+	var vcs = (1.743 + 0.097 * (block) + 0.053 * (wordCount) + 0.003 * (imageCount)) / 10;
+	
+	if(vcs > 10){
+		return 10.0;
+	}
+	
+	return vcs;
 }

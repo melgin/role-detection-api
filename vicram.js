@@ -27,9 +27,19 @@ var borderLen;
 var visibleBorder;
 
 function calculateVicramScore(root) {
-	if (root == null) {
-		return "doc is null";
+	if (! root) {
+		return {
+			"err":"doc is null"
+		};
 	} else {
+		var body = getBodyNode(root);
+		
+		if(! body){
+			return {
+				"err":"body is null"
+			};
+		}
+		
 		// reset variables to zero/false appropriately
 		links = 0;
 		lists = 0;
@@ -54,15 +64,15 @@ function calculateVicramScore(root) {
 		columns = 0;
 		
 		// Elements Counter
-		countElements(root);
+		countElements(body);
 		
 		// Block Counter
-		for (var i = 0; i < root.childNodes.length; i++){
+		for (var i = 0; i < body.childNodes.length; i++){
 			findName = true;
 			singlesChildren = false;
 			isTLC = false;
 			headingTLC = false;
-			countTLC(root.childNodes[i]);
+			countTLC(body.childNodes[i]);
 		}
 		
 		/*
@@ -89,9 +99,30 @@ function calculateVicramScore(root) {
 			VCS = 10.0;
 		}
 
-		return VCS;
+		return {
+			tlc: TLC,
+			wordCount: wordCount,
+			imageCount: imageCount
+		};
 	}
 }
+
+function getBodyNode(root){
+	for (var i = 0; i < root.childNodes.length; i++){
+		var child = root.childNodes[i];
+		
+		for(var j = 0; j < child.childNodes.length; j++){
+			var childChild = child.childNodes[j];
+			
+			if(isTextEqualTo(childChild.nodeName, 'body')){
+				return childChild;
+			}
+		}
+	}
+	
+	return null;
+}
+
 
 function countElements(el){
 	if (el == null){
@@ -141,14 +172,14 @@ function countElements(el){
 		var content = el.textContent;
 		
 		if (content && content.trim() !== '') {
-			wordCount += getWordCount(content);
+			wordCount += getTokenCount(content);
 			
 			//console.log(wordCount + ' -> ' + content);
 		}
 	}// ends if (type == Node.TEXT_NODE)
 }
 
-function getWordCount(textContent){
+function getTokenCount(textContent){
 	if(textContent){
 		var count = 0;
 		var segments = textContent.split(/[\s\.\?!@#\$&\*\/\-,:<>\(\)"'~;=_\|]/);
@@ -251,10 +282,11 @@ function countTLC(node){
 	}
 	
 	var type = node.nodeType;
-	if (type == Node.DOCUMENT_NODE) {
-		for (var i = 0; i < el.childNodes.length; i++){
-			if(el.childNodes[i].nodeType === Node.ELEMENT_NODE){
-				countTLC(el.childNodes[i]);
+	if (type == Node.DOCUMENT_NODE || isTextEqualTo(node.nodeName, 'html')
+			|| isTextEqualTo(node.nodeName, 'body')) {
+		for (var i = 0; i < node.childNodes.length; i++){
+			if(node.childNodes[i].nodeType === Node.ELEMENT_NODE){
+				countTLC(node.childNodes[i]);
 			}
 		}
 	} else if (type === Node.ELEMENT_NODE) {
@@ -366,6 +398,7 @@ function countTLC(node){
 					if (childStyle) {
 						var displayChild = childStyle.display;
 						if (isTextEqualTo(displayChild, "block") || isTextEqualTo(display, "table")){
+							console.log('1 ' + node.nodeName);
 							blockChild = true;
 						}
 					}
@@ -373,11 +406,13 @@ function countTLC(node){
 			}// end if not null children
 
 			if (isTextEqualTo(display, "block") && ! blockChild) {
+				console.log('1 ' + node.nodeName);
 				TLC++;
 				isTLC = true;
 			}
 
 			else if (singlesChildren && ! isTLC) {
+				console.log('2 ' + node.nodeName);
 				TLC++;
 				isTLC = true;
 			}
@@ -391,6 +426,7 @@ function countTLC(node){
 		
 		else if (isTextEqualTo(nodeName, "div")) {
 			if (visibleBorder) {
+				console.log('3 ' + node.nodeName);
 				TLC++;
 				isTLC = true;
 			}
@@ -434,6 +470,7 @@ function countTLC(node){
 			// step 5(ii)
 			if (isTextEqualTo(nodeName, "div")) {
 				if (visibleBorder && ! isLayout) {
+					console.log('4 ' + node.nodeName);
 					TLC++;
 					isTLC = true;
 				}
@@ -441,17 +478,20 @@ function countTLC(node){
 			// step 5(iii) --flag that already identified TLC based on
 			// headings
 			else if (isTextEqualTo(nodeName, "h1") || isTextEqualTo(nodeName, "h2")) {
+				console.log('5 ' + node.nodeName);
 				TLC++;
 				isTLC = true;
 				headingTLC = true;
 			}
 			// step 5(iv)
 			else if (! headingTLC && isTextEqualTo(nodeName, "h3")) {
+				console.log('6 ' + node.nodeName);
 				TLC++;
 				isTLC = true;
 			}
 			// step 5(v)
 			else if (! headingTLC && isTextEqualTo(nodeName, "h4")) {
+				console.log('7 ' + node.nodeName);
 				TLC++;
 				isTLC = true;
 			}
@@ -485,19 +525,23 @@ function countTLC(node){
 				}
 
 				if (! isTLC && dataTable) {
+					console.log('8 ' + node.nodeName);
 					TLC++;
 					isTLC = true;
 				} else if (! dataTable) {
 					tableCellLayout(node);
 					if (isLayout) {
 						if (! isTLC) {
+							console.log('9 ' + node.nodeName);
 							TLC++;
 							isTLC = true;
 						}
 					} else if (! isLayout && blockChilNodes) {
+						console.log('10 ' + node.nodeName);
 						TLC++;
 						isTLC = true;
 					} else if (isTextEqualTo(nodeName, "div")) {
+						console.log('11 ' + node.nodeName);
 						TLC++;
 						isTLC = true;
 					}
