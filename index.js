@@ -90,7 +90,7 @@ function process(req, res){
             t2 = Date.now();
 
 			blockTree.setLocationData();
-            blockTree.calculateWhiteSpaceArea();
+            blockTree.calculateWhiteSpaceArea(true);
 
 			if(blockTree){
 				roleDetector.detectRoles(blockTree, pageWidth, pageHeight, fontSize, fontColor,
@@ -121,6 +121,7 @@ function vicram(req, res){
         agent = req.body.userAgent,
         t0 = 0,
         t1 = 0,
+        t2 = 0,
 		tlc = null,
 		imageCount = null,
 		wordCount = null,
@@ -205,11 +206,11 @@ function vicram(req, res){
 				var numberOfBlocks = blockTree.getOverallBlockCount();
 				var numberOfLeaves = blockTree.getOverallLeafCount();
 				var depth = blockTree.getDepth();
-				
+
 				if(errorMessage){
 					return sendErrorResponse(500, errorMessage);
 				}
-				
+
 				sendResponse({
 					vicram: calculateVcs(tlc, wordCount, imageCount),
 					numberOfBlocks: calculateVcs(numberOfBlocks, wordCount, imageCount),
@@ -239,10 +240,10 @@ function vicram(req, res){
 
 function calculateVcs(block, wordCount, imageCount){
 	var vcs = (1.743 + 0.097 * (block) + 0.053 * (wordCount) + 0.003 * (imageCount)) / 10;
-	
+
 	if(vcs > 10){
 		return 10.0;
 	}
-	
+
 	return vcs;
 }

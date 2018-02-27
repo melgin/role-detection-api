@@ -46,13 +46,13 @@ Block.prototype.getOverallBlockCount = function(){
 	if(! this.block.children || this.block.children.length === 0){
 		return 1;
 	}
-	
+
 	var cummulativeBlockCount = 0;
-	
+
 	this.children.forEach(function(child){
 		cummulativeBlockCount += child.getOverallBlockCount();
 	});
-	
+
 	return cummulativeBlockCount + 1;
 }
 
@@ -62,11 +62,11 @@ Block.prototype.getOverallLeafCount = function(){
 	}
 
 	var cummulativeBlockCount = 0;
-	
+
 	this.children.forEach(function(child){
 		cummulativeBlockCount += child.getOverallLeafCount();
 	});
-		
+
 	return cummulativeBlockCount;
 }
 
@@ -74,13 +74,13 @@ Block.prototype.getDepth = function(){
 	if(! this.block.children || this.block.children.length === 0){
 		return 1;
 	}
-	
+
 	var depth = 0;
-	
+
 	this.children.forEach(function(child){
 		depth = Math.max(depth, child.getDepth());
 	});
-	
+
 	return depth + 1;
 }
 
@@ -151,6 +151,10 @@ Block.prototype.subtractPadding = function(){
 	}
 }
 
+Block.prototype.getHeight = function(){
+    return this.block.height;
+}
+
 Block.prototype.setLocationData = function(){
 	var location = this.getVirtualLocation();
 
@@ -195,7 +199,7 @@ Block.prototype.getFullArea = function(){
     return this.block.fullArea;
 }
 
-Block.prototype.calculateWhiteSpaceArea = function(){
+Block.prototype.calculateWhiteSpaceArea = function(checkChildMargin){
     if(this.getChildCount() === 0){
         this.block.fullArea = this.block.width * this.block.height;
         this.block.whiteSpace = 0;
@@ -204,12 +208,23 @@ Block.prototype.calculateWhiteSpaceArea = function(){
         var i, totalChildrenArea = 0;
 
     	for(i = 0; i < this.getChildCount(); i++){
-    		var child = this.getChildAt(i);
-            child.calculateWhiteSpaceArea();
+            var child = this.getChildAt(i);
+
+            if(checkChildMargin){
+                if(child.getNode().attributes && child.getNode().attributes.marginLeft){
+                    totalChildrenArea += parseInt(child.getNode().attributes.marginLeft) * child.getHeight();
+                }
+
+                if(child.getNode().attributes && child.getNode().attributes.marginRight){
+                    totalChildrenArea += parseInt(child.getNode().attributes.marginRight) * child.getHeight();
+                }
+            }
+
+            child.calculateWhiteSpaceArea(checkChildMargin && child.getNode().isCompositeNode);
             totalChildrenArea += child.getFullArea();
     	}
 
-        this.block.fullArea = totalChildrenArea;
+        this.block.fullArea = Math.max(0, totalChildrenArea);
         this.block.whiteSpace = this.block.width * this.block.height - totalChildrenArea;
         this.block.whiteSpaceRatio = this.block.whiteSpace / (this.block.width * this.block.height);
     }
