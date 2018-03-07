@@ -1,7 +1,7 @@
 var links, imageCount, tables, paragraphs, formCount,
 	rows, columns, lists,
 	listItems, wordCount, blocks, TLC;
-	
+
 var insideLink = false,
 	insideList = false,
 	insideTableRow = false,
@@ -33,13 +33,13 @@ function calculateVicramScore(root) {
 		};
 	} else {
 		var body = getBodyNode(root);
-		
+
 		if(! body){
 			return {
 				"err":"body is null"
 			};
 		}
-		
+
 		// reset variables to zero/false appropriately
 		links = 0;
 		lists = 0;
@@ -56,16 +56,16 @@ function calculateVicramScore(root) {
 		singlesChildren = false;
 		lastIsImg = false;
 		visibleBorder = false;
-		
+
 		listItems = 0;
 		paragraphs = 0;
 		formCount = 0;
 		rows = 0;
 		columns = 0;
-		
+
 		// Elements Counter
 		countElements(body);
-		
+
 		// Block Counter
 		for (var i = 0; i < body.childNodes.length; i++){
 			findName = true;
@@ -74,15 +74,14 @@ function calculateVicramScore(root) {
 			headingTLC = false;
 			countTLC(body.childNodes[i]);
 		}
-		
+
 		/*
 		 * Visual Complexity Score calculation
 		 */
-		 
-		 console.log('TLC: ' + TLC);
+		 /*console.log('TLC: ' + TLC);
 		 console.log('word count: ' + wordCount);
 		 console.log('image count: ' + imageCount);
-		 
+
 		 console.log('links: ' + links);
 		 console.log('tables: ' + tables);
 		 console.log('paragraphs: ' + paragraphs);
@@ -91,9 +90,9 @@ function calculateVicramScore(root) {
 		 console.log('columns: ' + columns);
 		 console.log('lists: ' + lists);
 		 console.log('list items: ' + listItems);
-		 console.log('blocks: ' + blocks);
-		 
-		 
+		 console.log('blocks: ' + blocks);*/
+
+
 		var VCS = (1.743 + 0.097 * (TLC) + 0.053 * (wordCount) + 0.003 * (imageCount)) / 10;
 		if (VCS > 10) {
 			VCS = 10.0;
@@ -110,27 +109,27 @@ function calculateVicramScore(root) {
 function getBodyNode(root){
 	for (var i = 0; i < root.childNodes.length; i++){
 		var child = root.childNodes[i];
-		
+
 		for(var j = 0; j < child.childNodes.length; j++){
 			var childChild = child.childNodes[j];
-			
+
 			if(isTextEqualTo(childChild.nodeName, 'body')){
 				return childChild;
 			}
 		}
 	}
-	
+
 	return null;
 }
 
 
 function countElements(el){
-	if (el == null){
+	if (! el){
 		return;
 	}
-		
+
 	var type = el.nodeType;
-	
+
 	if(type === Node.COMMENT_NODE){
 		// do nothing
 	} else if(type === Node.DOCUMENT_NODE){
@@ -164,16 +163,16 @@ function countElements(el){
 
 		// recurse through the node to find the rest of the counters
 		if(! isTextEqualTo(nodeName, 'head') && ! isTextEqualTo(nodeName, 'title') && ! isTextEqualTo(nodeName, 'script') && ! isTextEqualTo(nodeName, 'style') && ! isTextEqualTo(nodeName, 'noscript')){
-			for (var i = 0; i < el.childNodes.length; i++){
-				countElements(el.childNodes[i]);
+			for (var j = 0; j < el.childNodes.length; j++){
+				countElements(el.childNodes[j]);
 			}
 		}
-	} else if (type == Node.TEXT_NODE) {
+	} else if (+type === +Node.TEXT_NODE) {
 		var content = el.textContent;
-		
+
 		if (content && content.trim() !== '') {
 			wordCount += getTokenCount(content);
-			
+
 			//console.log(wordCount + ' -> ' + content);
 		}
 	}// ends if (type == Node.TEXT_NODE)
@@ -183,22 +182,22 @@ function getTokenCount(textContent){
 	if(textContent){
 		var count = 0;
 		var segments = textContent.split(/[\s\.\?!@#\$&\*\/\-,:<>\(\)"'~;=_\|]/);
-		
+
 		segments.forEach(function(segment){
 			if(segment !== ''){
 				count++;
 			}
 		});
-		
+
 		return count;
 	}
-	
+
 	return 0;
 }
 
 function singleChildren(node, length) {
 	var nodeLength = length;
-	
+
 	// need to check all the node/tree
 	if (nodeLength === 1 || nodeLength === 0) {
 		if (! isTextEqualTo(node.nodeName, 'table') && ! isTextEqualTo(node.nodeName, 'tbody')) {
@@ -215,7 +214,7 @@ function singleChildren(node, length) {
 			}
 		}
 	}
-	
+
 	return singlesChildren;
 }
 
@@ -229,7 +228,7 @@ function tableCellLayout(node) {
 	isLayout = false;
 	var tableRows = 0,
 		tableCols = 0;
-	
+
 	// table-->tbody-->tr-->td
 	// get the children nodes of the tbody
 	var tbody = node.childNodes[0];
@@ -242,7 +241,7 @@ function tableCellLayout(node) {
 				rows++;
 				tableRows++;
 			}// ends if
-			
+
 			// get the children of TR to find TD count
 			var trChildNodes = trnode.childNodes;
 			for (var j = 0; j < trChildNodes.length; j++) {
@@ -264,7 +263,7 @@ function tableCellLayout(node) {
 			isLayout = true;
 		}
 	}
-	
+
 	return isLayout;
 }// ends tableCellLayout
 
@@ -272,7 +271,7 @@ function isTextEqualTo(sourceText, targetText){
 	if(sourceText && targetText){
 		return sourceText.trim().toLowerCase() === targetText.trim().toLowerCase();
 	}
-	
+
 	return false;
 }
 
@@ -280,26 +279,27 @@ function countTLC(node){
 	if (! node){
 		return 0;
 	}
-	
+
 	var type = node.nodeType;
-	if (type == Node.DOCUMENT_NODE || isTextEqualTo(node.nodeName, 'html')
-			|| isTextEqualTo(node.nodeName, 'body')) {
+    var px;
+
+	if (+type === +Node.DOCUMENT_NODE || isTextEqualTo(node.nodeName, 'html') || isTextEqualTo(node.nodeName, 'body')) {
 		for (var i = 0; i < node.childNodes.length; i++){
 			if(node.childNodes[i].nodeType === Node.ELEMENT_NODE){
 				countTLC(node.childNodes[i]);
 			}
 		}
-	} else if (type === Node.ELEMENT_NODE) {
+	} else if (+type === +Node.ELEMENT_NODE) {
 		if(isTextEqualTo(node.nodeName, 'head') ){
 			return 0;
 		}
-		
+
 		var style = window.getComputedStyle(node);
-		
+
 		if (style) {
 			display = style.display;
-			borderWidth = parseInt(style.borderLeftWidth) + 
-						  parseInt(style.borderRightWidth) + 
+			borderWidth = parseInt(style.borderLeftWidth) +
+						  parseInt(style.borderRightWidth) +
 						  parseInt(style.borderTopWidth) +
 						  parseInt(style.borderBottomWidth);
 
@@ -308,7 +308,7 @@ function countTLC(node){
 			 // 1. Get border attributes: borderWidth returns medium or Npx
 			 // (N=number) need to check if the borderWidth is a number and
 			 // is >0
-			 // 
+			 //
 			 // 2. If border width contains a number of pixels as Npx, we use
 			 // StringTokenizer to get the string that contains the string
 			 // part with the px string in it some elements have different px
@@ -323,7 +323,7 @@ function countTLC(node){
 				}
 			}
 		}// ends style info extraction
-		
+
 		if (! display) {
 			display = "";
 		}
@@ -332,14 +332,14 @@ function countTLC(node){
 		// is to flag elements such as standaline images) => lastIsImg flag
 		// 1. Get the NodeList of the current node and find the number of
 		// children that are type=1 ONLY
-		// 
+		//
 		// 2. If there is only one type 1 child, we check if it is an <img>
 		// and we flag as true
 
 		var children = node.childNodes;
 		len = 0;
-		for (var i = 0; i < children.length; i++) {
-			if (children[i].nodeType == 1){
+		for (var j = 0; j < children.length; j++) {
+			if (children[j].nodeType == 1){
 				len++;
 			}
 		}
@@ -348,8 +348,8 @@ function countTLC(node){
 		lastIsImg = false;
 		var nodeName = node.nodeName;
 		if (len === 1) {
-			for (var i = 0; i < children.lenght; i++) {
-				if (isTextEqualTo(children[i].nodeName, 'img')) {
+			for (var k = 0; k < children.lenght; k++) {
+				if (isTextEqualTo(children[k].nodeName, 'img')) {
 					lastIsImg = true;
 				}
 			}
@@ -358,47 +358,47 @@ function countTLC(node){
 		// STEP 3. blockChild: Determine if the node has only one child
 		// (singleChildren - method) and if it is displayed as block or
 		// table:
-		// 
+		//
 		// 1. Determine if it is a singleChildren (see respective method)
-		// 
+		//
 		// 2. Determine if it is a blockChild, that is displayed as a block
 		// or table no matter of the output of singleChildren
-		// 
+		//
 		// 3. If display=block && blockChild==false => TLC
-		// 
+		//
 		// 4. else If singleChild==true && isTLC==false => TLC
-		// 
+		//
 		// We need to follow these steps because if the last child is an
 		// image then it is a TLC BUT then might have multiple TLCs! So, we
 		// need to check that the img is the ONLY children and that the tag
 		// is a series of singles children
-		// 
+		//
 		// NOTE: this needs to be visited only once per node so we use a
 		// boolean flag findName which needs to be reset to true on the main
 		// method.
-		// 
+		//
 		// Also, isTLC is used to make sure that a node is only once
 		// identified as TLC and avoid duplicates
-		
+
 		if (findName) {
 			if (children && children.length > 0) {
 				singleChildren(node, len);
-				for (var i = 0; i < len; i++) {
+				for (var l = 0; l < len; l++) {
 					// need to check each child's display attribute and
 					// whether is a singleChildren
 					// insert a flag - if there is at least one block level
 					// element child then flag as true
 					// blockChild are blocks!
-					childNode = children[i];
+					var childNode = children[l];
 					//NodeList childNodeList = childNode.getChildNodes();
 					//int length = childNodeList.getLength();
 					singleChildren(node, len);
-					
+
 					var childStyle = window.getComputedStyle(childNode);
 					if (childStyle) {
 						var displayChild = childStyle.display;
 						if (isTextEqualTo(displayChild, "block") || isTextEqualTo(display, "table")){
-							console.log('1 ' + node.nodeName);
+							//console.log('1 ' + node.nodeName);
 							blockChild = true;
 						}
 					}
@@ -406,13 +406,13 @@ function countTLC(node){
 			}// end if not null children
 
 			if (isTextEqualTo(display, "block") && ! blockChild) {
-				console.log('1 ' + node.nodeName);
+				//console.log('1 ' + node.nodeName);
 				TLC++;
 				isTLC = true;
 			}
 
 			else if (singlesChildren && ! isTLC) {
-				console.log('2 ' + node.nodeName);
+				//console.log('2 ' + node.nodeName);
 				TLC++;
 				isTLC = true;
 			}
@@ -423,10 +423,10 @@ function countTLC(node){
 		// step here and not earlier to avoid duplicates. A <div> with
 		// visible border could contain an img as a singleChildren or is
 		// displayed as block element (see Step 3)
-		
+
 		else if (isTextEqualTo(nodeName, "div")) {
 			if (visibleBorder) {
-				console.log('3 ' + node.nodeName);
+				//console.log('3 ' + node.nodeName);
 				TLC++;
 				isTLC = true;
 			}
@@ -435,42 +435,44 @@ function countTLC(node){
 		// STEP 5. If a block displayed element has block-displayed children
 		// THis step leads to a set of substeps described where appropriate
 		// (5a-5c).
-		// 
+		//
 		// Step 5 is also recursive for some substeps (5c and 5c):
-		// 
+		//
 		// (i). Node is displayed as block/table or display starts with
 		// table
-		// 
+		//
 		// (ii). If the node is a <div> element, has visible border and is
 		// not used for Layout => TLC
-		// 
+		//
 		// (iii). else if the node is a heading <h1> or <h2> => TLC && flag
 		// that is identified as heading
-		// 
+		//
 		// (iv). else if <h3> && headingTLC==false => TLC
-		// 
+		//
 		// (v). else if <h4> && headintTLC==false => TLC
-		// 
+		//
 		// (vi). else if the node is a table and has visible border need to
 		// make sure if the table is used for data or layout if the table
 		// has a caption or a theading => then it would be a data table
 		// which we count as one TLC if the table has only visible border
 		// for now we count it as a TLC TLC++ if (one of those else if
 		// statements): a. dataTable==true && isTLC==false
-		// 
+		//
 		// b. dataTalbe==false && isLayout==true (table is used for layout
 		// see respective method)
-		// 
+		//
 		// c. isLayout == false && blockChilNodes==true
-		// 
+		//
 		// d. nodeName.equalsIgnoreCase("div")
-		 
 
-		else if (display && (isTextEqualTo(display, "block") || isTextEqualTo(display, "table") || display.indexOf("table") === 0)) {
+
+		else if (display && (isTextEqualTo(display, "block") || isTextEqualTo(display, "table") ||
+            display.indexOf("table") === 0)) {
+
 			// step 5(ii)
 			if (isTextEqualTo(nodeName, "div")) {
 				if (visibleBorder && ! isLayout) {
-					console.log('4 ' + node.nodeName);
+					//console.log('4 ' + node.nodeName);
 					TLC++;
 					isTLC = true;
 				}
@@ -478,20 +480,20 @@ function countTLC(node){
 			// step 5(iii) --flag that already identified TLC based on
 			// headings
 			else if (isTextEqualTo(nodeName, "h1") || isTextEqualTo(nodeName, "h2")) {
-				console.log('5 ' + node.nodeName);
+				//console.log('5 ' + node.nodeName);
 				TLC++;
 				isTLC = true;
 				headingTLC = true;
 			}
 			// step 5(iv)
 			else if (! headingTLC && isTextEqualTo(nodeName, "h3")) {
-				console.log('6 ' + node.nodeName);
+				//console.log('6 ' + node.nodeName);
 				TLC++;
 				isTLC = true;
 			}
 			// step 5(v)
 			else if (! headingTLC && isTextEqualTo(nodeName, "h4")) {
-				console.log('7 ' + node.nodeName);
+				//console.log('7 ' + node.nodeName);
 				TLC++;
 				isTLC = true;
 			}
@@ -500,19 +502,19 @@ function countTLC(node){
 			else if (isTextEqualTo(nodeName, "table") || display.indexOf("table") > -1) {
 				var dataTable = false;
 				var blockChilNodes = false;
-				
+
 				var tchildren = node.childNodes;
 				if (tchildren) {
-					for (var i = 0; i < tchildren.length; i++) {
+					for (var m = 0; m < tchildren.length; m++) {
 						// need to check if the table's children are thead
 						// or caption
-						
-						var tchild = tchildren[i];
+
+						var tchild = tchildren[m];
 						if (isTextEqualTo(tchild.nodeName, "thead") || isTextEqualTo(tchild.nodeName, "caption")) {
 							dataTable = true;
 							dataTables++;
 						}
-						
+
 						// check if there are block level child nodes
 						var childStyle = window.getComputedStyle(tchild);
 						if(childStyle){
@@ -525,36 +527,36 @@ function countTLC(node){
 				}
 
 				if (! isTLC && dataTable) {
-					console.log('8 ' + node.nodeName);
+					//console.log('8 ' + node.nodeName);
 					TLC++;
 					isTLC = true;
 				} else if (! dataTable) {
 					tableCellLayout(node);
 					if (isLayout) {
 						if (! isTLC) {
-							console.log('9 ' + node.nodeName);
+							//console.log('9 ' + node.nodeName);
 							TLC++;
 							isTLC = true;
 						}
 					} else if (! isLayout && blockChilNodes) {
-						console.log('10 ' + node.nodeName);
+						//console.log('10 ' + node.nodeName);
 						TLC++;
 						isTLC = true;
 					} else if (isTextEqualTo(nodeName, "div")) {
-						console.log('11 ' + node.nodeName);
+						//console.log('11 ' + node.nodeName);
 						TLC++;
 						isTLC = true;
 					}
 				}// ends if dataTable=false
 			}// ends else-if table
 		}// ends else-if block
-		
+
 		// Recurse through the rest of the childrenNodes
-		for (var i = 0; i < node.childNodes.length; i++){
+		for (var w = 0; w < node.childNodes.length; w++){
 			visibleBorder = false;
-			countTLC(node.childNodes[i]);
+			countTLC(node.childNodes[w]);
 		}
-		
+
 	}// end if element node
 
 	return TLC;

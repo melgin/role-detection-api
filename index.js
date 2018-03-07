@@ -26,12 +26,17 @@ function process(req, res){
         height = +req.body.height ? req.body.height : 1080,
 		explainRoles = req.body.explainRoles,
         agent = req.body.userAgent,
+        wait = req.body.wait,
         t0 = 0,
         t1 = 0,
         t2 = 0;
 
     if(agent){
         agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0';
+    }
+
+    if(! wait || wait < 0){
+        wait = 0;
     }
 
 	var sendErrorResponse = function(status, message){
@@ -65,9 +70,14 @@ function process(req, res){
 		.then(function () {
 			t1 = Date.now();
 		})
+        .wait(wait)
         .on('consoleMessage', function( msg ){
             console.log(msg);
         })
+        .catch((error) => {
+			horseman.close();
+            return sendErrorResponse(500, error);
+		})
         .injectJs('page-renderer.js')
         .evaluate(function () {
             return traverseDOMTree(document, true, null, 0);
@@ -119,6 +129,7 @@ function vicram(req, res){
         width = +req.body.width ? req.body.width : 1920,
         height = +req.body.height ? req.body.height : 1080,
         agent = req.body.userAgent,
+        wait = req.body.wait,
         t0 = 0,
         t1 = 0,
         t2 = 0,
@@ -126,6 +137,10 @@ function vicram(req, res){
 		imageCount = null,
 		wordCount = null,
 		errorMessage = null;
+
+    if(! wait || wait < 0){
+        wait = 0;
+    }
 
     if(agent){
         agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0';
@@ -164,13 +179,14 @@ function vicram(req, res){
 				console.log('Opened the document');
 				t1 = Date.now();
 			})
+            .wait(wait)
 			.on('consoleMessage', function( msg ){
 				console.log(msg);
 			})
-			.on('error', function( msg, trace ){
-				console.log(msg);
-				return sendErrorResponse(500, msg);
-			})
+            .catch((error) => {
+    			horseman.close();
+                return sendErrorResponse(500, error);
+    		})
 			.injectJs('vicram.js')
 			.injectJs('page-renderer.js')
 			.evaluate(function () {

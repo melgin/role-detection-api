@@ -6,6 +6,106 @@ function checkIntersection(b1, b2){
            (b2.topY + b2.height - 1) > b1.topY);
 }
 
+function getWhiteSpaceArea(mainBlock, subBlockList){
+	if(! subBlockList || subBlockList.length === 0){
+		return mainBlock.width * mainBlock.height;
+	}
+	
+	var intersectionBlocks = [];
+	
+	for(var i = 0; i < subBlockList.length; i++){
+		var subBlock = subBlockList[i];
+		if(checkIntersection(mainBlock, subBlock)){
+			intersectionBlocks.push(subBlock);
+		}
+	}
+	
+	var blockList = [mainBlock];
+	if(! intersectionBlocks || intersectionBlocks.length === 0){
+		return mainBlock.width * mainBlock.height;
+	}
+	
+	for(var i = 0; i < intersectionBlocks.length; i++){
+		var subBlock = intersectionBlocks[i];
+		
+		if(blockList.length === 0){
+			return 0;
+		}
+		
+		var tmpBlockList = [];
+		for(var j = 0; j < blockList.length; j++){
+			var block = blockList[j];
+			
+			if(checkIntersection(block, subBlock)){
+				var blockOnTheLeft = {
+					topX: block.topX,
+					topY: subBlock.topY,
+					width: subBlock.topX - block.topX,
+					height: subBlock.height,
+					d: 'l'
+				};
+				var blockOnTheRight = {
+					topX: subBlock.topX + subBlock.width,
+					topY: subBlock.topY,
+					width: block.topX + block.width - subBlock.topX - subBlock.width,
+					height: subBlock.height,
+					d: 'r'
+				};
+				var blockOnTheTop = {
+					topX: block.topX,
+					topY: block.topY,
+					width: block.width,
+					height: subBlock.topY - block.topY,
+					d: 't'
+				};
+				var blockOnTheBottom = {
+					topX: block.topX,
+					topY: subBlock.topY + subBlock.height,
+					width: block.width,
+					height: block.topY + block.height - subBlock.topY - subBlock.height,
+					d: 'b'
+				};
+				
+				//blockList.splice(j, 1);
+
+				if(blockOnTheLeft.width > 0 && blockOnTheLeft.height > 0){
+					tmpBlockList.push(blockOnTheLeft);
+				}
+				
+				if(blockOnTheRight.width > 0 && blockOnTheRight.height > 0){
+					tmpBlockList.push(blockOnTheRight);
+				}
+				
+				if(blockOnTheTop.width > 0 && blockOnTheTop.height > 0){
+					tmpBlockList.push(blockOnTheTop);
+				}
+				
+				if(blockOnTheBottom.width > 0 && blockOnTheBottom.height > 0){
+					tmpBlockList.push(blockOnTheBottom);
+				}
+			} else {
+				tmpBlockList.push(block);
+			}
+		}
+		
+		blockList = tmpBlockList;
+	}
+	
+	if(blockList.length === 0){
+		return 0;
+	}
+	
+	var totalWhitespace = 0;
+	
+	for(var k = 0; k < blockList.length; k++){
+		var block = blockList[k];
+		
+		totalWhitespace += (block.width * block.height);
+	}
+	
+	return totalWhitespace;
+}
+
 function getIntersectionArea(b1, b2){
 	var xOverlap = Math.max(0, Math.min(b1.topX + b1.width, b2.topX + b2.width) - Math.max(b1.topX, b2.topX));
 	var yOverlap = Math.max(0, Math.min(b1.topY + b1.height, b2.topY + b2.height) - Math.max(b1.topY, b2.topY));
@@ -96,6 +196,7 @@ function subtract(blockInFront, blockAtBack){
 	return blockAtBack;
 }
 
+module.exports.getWhiteSpaceArea = getWhiteSpaceArea;
 module.exports.checkIntersection = checkIntersection;
 module.exports.getIntersectionArea = getIntersectionArea;
 module.exports.checkBlockIntersection = checkBlockIntersection;

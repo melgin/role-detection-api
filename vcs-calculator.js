@@ -4,13 +4,14 @@ var fs = require('fs'),
     Horseman = require('node-horseman');
 
 
-var urlList = ["https://www.google.com",
+var urlList = [
+    /*"https://www.google.com",
 	"https://www.youtube.com",
 	"https://www.facebook.com",
 	"http://www.baidu.com",
-	"https://www.wikipedia.org",
+	"https://www.wikipedia.org",*/
 	"https://www.reddit.com",
-	"https://www.yahoo.com",
+/*	"https://www.yahoo.com",
 	"http://www.qq.com",
 	"https://world.taobao.com",
 	"https://www.tmall.com",
@@ -39,7 +40,7 @@ var urlList = ["https://www.google.com",
 	"https://err.tmall.com",
 	"https://www.hao123.com",
 	"https://www.bing.com",
-	"https://imgur.com"
+	"https://imgur.com"*/
 ];
 
 urlList.forEach(function(url){
@@ -55,7 +56,8 @@ function process(url){
 
 	var width = 1920,
         height = 1080,
-        agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0';
+        agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0',
+        tlc, wordCount, imageCount, errorMessage;
 
     if(agent){
         agent
@@ -78,7 +80,7 @@ function process(url){
 				return horseman.close();
 			}
 		})
-		.wait(10000)
+		.wait(5000)
 		.catch((error) => {
 			console.log(url + ' ' + error);
 			return horseman.close();
@@ -90,22 +92,51 @@ function process(url){
             console.log(msg);
         })
 		.screenshot('images\\' + getFileName(url) + '.png')
+        .injectJs('vicram.js')
         .injectJs('page-renderer.js')
+        .evaluate(function () {
+            console.log('Evaluating');
+            return calculateVicramScore(document);
+        })
+        .then(function (vicramResponse) {
+            errorMessage = vicramResponse.err;
+            tlc = vicramResponse.tlc;
+            imageCount = vicramResponse.imageCount;
+            wordCount = vicramResponse.wordCount;
+        })
         .evaluate(function () {
             return traverseDOMTree(document, true, null, 0);
         })
         .then(function (nodeTree) {
-            var blockTree = null;
+            var blockTree = null,
+                pageWidth = 0,
+                pageHeight = 0,
+                fontColor = null,
+                fontSize = null;
 
             if(nodeTree){
+                pageWidth = nodeTree.attributes.width;
+                pageHeight = nodeTree.attributes.height;
+                fontColor = nodeTree.attributes.fontColor;
+                fontSize = nodeTree.attributes.fontSize;
                 blockTree = pageSegmenter.segment(nodeTree, width, height);
-			}
+            }
 
-			blockTree.setLocationData();
-            blockTree.calculateWhiteSpaceArea(true);
+            if(errorMessage){
+                return console.log(url + ' ' + errorMessage);
+            }
 
-			console.log(url + ' ' + blockTree.toJson().whiteSpaceRatio);
+            return console.log(url + ' ' + calculateVcs(tlc, wordCount, imageCount));
         })
         .close();
+}
 
+function calculateVcs(block, wordCount, imageCount){
+	var vcs = (1.743 + 0.097 * (block) + 0.053 * (wordCount) + 0.003 * (imageCount)) / 10;
+
+	if(vcs > 10){
+		return 10.0;
+	}
+
+	return vcs;
 }

@@ -284,4 +284,94 @@ describe('getIntersectionArea', function(){
 		var r = rectangleUtil.getIntersectionArea(rectX, rectY);
         expect(r).to.equal(40*1920);
     });
-})
+});
+
+
+describe('getWhiteSpaceArea', function(){
+	
+	var rectA = {
+	  topX: 0,
+	  topY: 0,
+	  width: 30,
+	  height: 40
+	};
+	
+	var rectA7 = {
+	  topX: 10,
+	  topY: 10,
+	  width: 10,
+	  height: 20
+	};
+	
+	var rectA2 = {
+	  topX: 0,
+	  topY: 0,
+	  width: 30,
+	  height: 40
+	};
+	
+	var rectA3 = {
+	  topX: 1000,
+	  topY: 1000,
+	  width: 30,
+	  height: 40
+	};
+	
+	var rectA4 = {
+	  topX: 0,
+	  topY: 0,
+	  width: 30,
+	  height: 20
+	};
+	
+	var rectA5 = {
+	  topX: 0,
+	  topY: 20,
+	  width: 30,
+	  height: 20
+	};
+	
+	var rectA6 = {
+	  topX: 0,
+	  topY: 0,
+	  width: 60,
+	  height: 60
+	};
+	
+	it('rectangleUtil.getWhiteSpaceArea(rectA, [...]) -- exact match', function() {
+		var r = rectangleUtil.getWhiteSpaceArea(rectA, [rectA2]);
+        expect(r).to.equal(0);
+    });
+	
+	it('rectangleUtil.getWhiteSpaceArea(rectA, [...]) -- no intersection', function() {
+		var r = rectangleUtil.getWhiteSpaceArea(rectA, [rectA3]);
+        expect(r).to.equal(1200);
+    });
+	
+	it('rectangleUtil.getWhiteSpaceArea(rectA, [...]) -- one block at top edge', function() {
+		var r = rectangleUtil.getWhiteSpaceArea(rectA, [rectA4]);
+        expect(r).to.equal(600);
+    });
+	
+	it('rectangleUtil.getWhiteSpaceArea(rectA, [...]) -- two blocks exact match', function() {
+		var r = rectangleUtil.getWhiteSpaceArea(rectA, [rectA4, rectA5]);
+        expect(r).to.equal(0);
+    });
+	
+	it('rectangleUtil.getWhiteSpaceArea(rectA, [...]) -- one block larger', function() {
+		var r = rectangleUtil.getWhiteSpaceArea(rectA, [rectA6]);
+        expect(r).to.equal(0);
+    });
+	
+	it('rectangleUtil.getWhiteSpaceArea(rectA, [...]) -- one block in the middle', function() {
+		var r = rectangleUtil.getWhiteSpaceArea(rectA, [rectA7]);
+        expect(r).to.equal(1000);
+    });
+	
+	it('rectangleUtil.getWhiteSpaceArea(rectA, [...]) -- two blocks contains', function() {
+		var r = rectangleUtil.getWhiteSpaceArea(rectA, [rectA7, rectA5]);
+        expect(r).to.equal(500);
+    });
+});
+
+
