@@ -23,7 +23,7 @@ var server = app.listen(config.port, function () {
 function process(req, res){
 	var url = req.body.url,
         width = +req.body.width ? req.body.width : 1920,
-        height = +req.body.height ? req.body.height : 1920,
+        height = +req.body.height ? req.body.height : 1080,
 		explainRoles = req.body.explainRoles,
         agent = req.body.userAgent,
         t0 = 0,
@@ -117,7 +117,7 @@ function process(req, res){
 function vicram(req, res){
 	var url = req.body.url,
         width = +req.body.width ? req.body.width : 1920,
-        height = +req.body.height ? req.body.height : 1920,
+        height = +req.body.height ? req.body.height : 1080,
         agent = req.body.userAgent,
         t0 = 0,
         t1 = 0,

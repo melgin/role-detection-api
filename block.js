@@ -199,13 +199,49 @@ Block.prototype.getFullArea = function(){
     return this.block.fullArea;
 }
 
+Block.prototype.getMinBottomY = function(){
+    if(this.getChildCount() === 0){
+        return this.block.topY;
+    } else {
+        var i, minBottomY = this.block.topY;
+
+        for(i = 0; i < this.getChildCount(); i++){
+            minBottomY = Math.min(minBottomY, this.getChildAt(i).getMinBottomY());
+        }
+
+        return minBottomY;
+    }
+}
+
+Block.prototype.getMaxTopY = function(){
+    if(this.getChildCount() === 0){
+        return this.block.topY + this.block.height;
+    } else {
+        var i, maxTopY = this.block.topY + this.block.height;
+
+        for(i = 0; i < this.getChildCount(); i++){
+            maxTopY = Math.max(maxTopY, this.getChildAt(i).getMaxTopY());
+        }
+
+        return maxTopY;
+    }
+}
+
 Block.prototype.calculateWhiteSpaceArea = function(checkChildMargin){
     if(this.getChildCount() === 0){
-        this.block.fullArea = this.block.width * this.block.height;
-        this.block.whiteSpace = 0;
-        this.block.whiteSpaceRatio = 0;
+		if(this.node.getNode().isCompositeNode){
+			this.block.fullArea = this.block.width * this.block.height;
+			this.block.whiteSpace = 0;
+			this.block.whiteSpaceRatio = 0;
+		} else {
+			this.block.fullArea = this.node.calculateArea();
+			this.block.whiteSpace = Math.max(0, this.block.width * this.block.height - this.block.fullArea);
+			this.block.whiteSpaceRatio = this.block.whiteSpace / (this.block.width * this.block.height);
+		}
     } else {
         var i, totalChildrenArea = 0;
+
+        var rectList = [];
 
     	for(i = 0; i < this.getChildCount(); i++){
             var child = this.getChildAt(i);
@@ -221,12 +257,38 @@ Block.prototype.calculateWhiteSpaceArea = function(checkChildMargin){
             }
 
             child.calculateWhiteSpaceArea(checkChildMargin && child.getNode().isCompositeNode);
-            totalChildrenArea += child.getFullArea();
+			
+			var childFullArea = child.getFullArea();
+			if(childFullArea){
+				totalChildrenArea += childFullArea;
+			}
+
+            for(var j = 0; j < rectList.length; j++){
+                var rect = rectList[j];
+
+                if(rectUtil.checkIntersection(rect, child.getLocation())){
+                    var intersection = rectUtil.getIntersectionArea(rect, child.getLocation());
+
+                    if(totalChildrenArea > intersection){
+                        totalChildrenArea -= intersection;
+                    }
+                }
+            }
+
+            rectList.push(child.getLocation());
     	}
 
+        var height = this.block.height,
+            maxTopY = this.getMaxTopY(),
+            minBottomY = this.getMinBottomY();
+
+        if(maxTopY - minBottomY > 2 * height){
+            height = maxTopY - minBottomY;
+        }
+
         this.block.fullArea = Math.max(0, totalChildrenArea);
-        this.block.whiteSpace = this.block.width * this.block.height - totalChildrenArea;
-        this.block.whiteSpaceRatio = this.block.whiteSpace / (this.block.width * this.block.height);
+        this.block.whiteSpace = Math.max(0, this.block.width * height - this.block.fullArea);
+        this.block.whiteSpaceRatio = this.block.whiteSpace / (this.block.width * height);
     }
 }
 

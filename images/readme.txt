@@ -1,0 +1,1 @@
+this folder is for screenshots of the web pages.

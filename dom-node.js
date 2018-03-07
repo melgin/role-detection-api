@@ -30,6 +30,20 @@ Node.prototype.getMaxFontSize = function() {
     return maxFontSize;
 };
 
+Node.prototype.calculateArea = function(){
+    if(this.hasChild() && this.node.tagName === 'DIV'){
+        var totalArea = 0;
+
+        for(var i = 0; i < this.getChildCount(); i++){
+            totalArea += this.getChildAt(i).calculateArea();
+        }
+
+        return totalArea;
+    } else {
+        return this.getAttributes().width * this.getAttributes().height;
+    }
+}
+
 Node.prototype.getVirtualLocation = function(){
 	if(this.getChildCount() === 0){
 		return {
@@ -39,15 +53,15 @@ Node.prototype.getVirtualLocation = function(){
 			topY: this.getAttributes().positionY
 		};
 	}
-	
+
 	var minX = Number.MAX_SAFE_INTEGER,
 	    maxX = 0,
 	    minY = Number.MAX_SAFE_INTEGER,
 	    maxY = 0;
-	
+
 	for(var i = 0; i < this.getChildCount(); i++){
 		var child = this.getChildAt(i);
-		
+
 		if(child.isCompositeNode() || child.getAttributes().height === 0){
 			var childLocation = child.getVirtualLocation();
 
@@ -57,15 +71,14 @@ Node.prototype.getVirtualLocation = function(){
 			maxY = Math.max(maxY, childLocation.topY + childLocation.height);
 		} else {
 			var childHeight = child.getAttributes().height;
-			
-			
+
 			minX = Math.min(minX, child.getAttributes().positionX);
 			maxX = Math.max(maxX, child.getAttributes().positionX + child.getAttributes().width);
 			minY = Math.min(minY, child.getAttributes().positionY);
 			maxY = Math.max(maxY, child.getAttributes().positionY + childHeight);
 		}
 	}
-	
+
 	return {
 		width: maxX - minX,
 		height: maxY - minY,
@@ -134,15 +147,15 @@ Node.prototype.isImageNode = function(){
 	if(this.node.tagName === 'IMG'){
 		return true;
 	}
-	
+
 	if(this.node.children.length === 1){
 		return this.getChildAt(0).isImageNode();
 	}
-	
+
 	if(this.node.isBackgroundImage){
 		return true;
 	}
-	
+
     return false;
 }
 
@@ -152,29 +165,29 @@ Node.prototype.areAllChildrenVirtualTextNodes = function() {
 		this.node.children.forEach(function(child){
             state = state && (child.tagName === 'BR' || +child.type === 3 /*Node.TEXT_NODE*/);
         });
-		
+
 		if(state){
 			return true;
 		}
-		
+
 		state = true;
-		
+
 		if(this.node.attributes && this.node.attributes.width <= 100){
 			this.node.children.forEach(function(child){
-				state = state && (child.inline || +child.type === 3 /*Node.TEXT_NODE*/ 
+				state = state && (child.inline || +child.type === 3 /*Node.TEXT_NODE*/
 					|| inlineNodes.indexOf(child.tagName) > -1 || (child.tagName === 'IMG' &&
 					child.attributes &&
 					child.attributes.width <= 30)
 					);
 			});
-			
+
 			if(state){
 				return true;
 			}
 		}
-		
+
 		state = true;
-		
+
         this.node.children.forEach(function(child){
             state = state && (child.inline || +child.type === 3 /*Node.TEXT_NODE*/);
         });
