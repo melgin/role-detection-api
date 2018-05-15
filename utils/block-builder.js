@@ -577,6 +577,22 @@ function handleNormalForm(block, node, doc, callback){
     });
 }
 
+function handleIntersectingChildrenForm(block, node, doc, intersectingChildrenCase, callback){
+	if(intersectingChildrenCase === 1){
+		var firstChild = node.getChildAt(0).getNode();
+		node.getNode().children = node.getChildAt(1).getNode().children;
+		node.getNode().children.push(firstChild);
+	} else if(intersectingChildrenCase === 2){
+		var secondChild = node.getChildAt(1).getNode();
+		node.getNode().children = node.getChildAt(0).getNode().children;
+		node.getNode().children.push(secondChild);
+	}
+	
+	return divideChildren(block, node, doc, callback, function(child){
+        return false;
+    });
+}
+
 /**
  * Divides the array of children into composite groups whenever a condition is met by one or more children
  *
@@ -786,4 +802,5 @@ module.exports.handleDifferentFloat = handleDifferentFloat;
 module.exports.handleDifferentMargin = handleDifferentMargin;
 module.exports.handleImageInChildren = handleImageInChildren;
 module.exports.handleObjectInChildren = handleObjectInChildren;
+module.exports.handleIntersectingChildrenForm = handleIntersectingChildrenForm;
 module.exports.handleNormalForm = handleNormalForm;

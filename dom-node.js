@@ -2,6 +2,8 @@
 
 module.exports = Node;
 
+var rectUtil = require('./utils/rectangle-util');
+
 function Node(node) {
     this.node = node;
 
@@ -284,6 +286,38 @@ Node.prototype.containsLineBreakObject = function() {
         if(child.children && child.children.length === 1 && child.containsLineBreakTerminalNode){
             return true;
         }
+    }
+
+    return false;
+}
+
+Node.prototype.hasInsersectingChildren = function() {
+    if(! this.hasChild() || this.getChildCount() < 2){
+        return false;
+    }
+
+    for(var i = 0; i < this.node.children.length; i++){
+		var n1 = this.node.children[i];
+		
+		while(n1.children.length === 1){
+			n1 = n1.children[0];
+		}
+		
+		for(var j = i + 1; j < this.node.children.length; j++){
+			var n2 = this.node.children[j];
+			
+			while(n2.children.length === 1){
+				n2 = n2.children[0];
+			}
+			
+			if(rectUtil.isBetweenNodeChildren(n1, n2)){
+				return 1;
+			}
+			
+			if(rectUtil.isBetweenNodeChildren(n2, n1)){
+				return 2;
+			}
+		}
     }
 
     return false;

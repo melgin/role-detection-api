@@ -86,6 +86,7 @@ function traverseDOMTree(root, border, parentBordered, blockLevel, parentZIndex)
 		nodeValue.attributes.backgroundColor = style.backgroundColor;
 		nodeValue.attributes.background = style.background;
         nodeValue.attributes.clear = style.clear;
+        nodeValue.attributes.display = style.display;
 	}
 
 	try {

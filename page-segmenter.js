@@ -55,10 +55,17 @@ function blockExtraction(block, currentNode, doc) {
     if(! currentNode || currentNode.isTextNode()){
 		return;
 	}
-
+	
 	if (currentNode.hasSingleChild()) {
 		return handleSingleChild(block, currentNode);
 	} else {
+		var intersectingChildrenCase = currentNode.hasInsersectingChildren();
+		if(intersectingChildrenCase){
+			log(currentNode.getXPath() + ' intersecting children');
+            block.setDoc(DOC_NORMAL_FORM);
+			blockBuilder.handleIntersectingChildrenForm(block, currentNode, DOC_NORMAL_FORM, intersectingChildrenCase, blockExtraction);
+		} else 
+		
 		// block has more than one children
 		// (a) if all of the children are virtual text nodes, the node will
 		// be a block
