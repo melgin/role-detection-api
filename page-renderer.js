@@ -92,6 +92,18 @@ function traverseDOMTree(root, border, parentBordered, blockLevel, parentZIndex)
 	try {
 		nodeValue.attributes.positionX = root.getBoundingClientRect().left;
 		nodeValue.attributes.positionY = root.getBoundingClientRect().top;
+		
+		var range = document.createRange();
+		range.selectNodeContents(el);
+		var rects = range.getClientRects();
+		if (rects.length > 0) {
+			var rect = rects[0];
+			nodeValue.attributes.positionX = rect.left;
+			nodeValue.attributes.positionY = rect.top;
+			nodeValue.attributes.width = rect.width;
+			nodeValue.attributes.height = rect.height;
+		}
+		
 		/*
 		if(style){
 			nodeValue.attributes.positionX += parseInt(style.marginLeft);
@@ -112,6 +124,18 @@ function traverseDOMTree(root, border, parentBordered, blockLevel, parentZIndex)
 			} else if(el.nodeType === Node.TEXT_NODE) {
                 var content = el.textContent;
                 if(content && content.trim() !== ''){
+					var range = document.createRange();
+					range.selectNodeContents(el);
+					var rects = range.getClientRects();
+					if (rects.length > 0) {
+						var rect = rects[0];
+						nodeValue.attributes.positionX = rect.left;
+						nodeValue.attributes.positionY = rect.top;
+						nodeValue.attributes.width = rect.width;
+						nodeValue.attributes.height = rect.height;
+					}
+					
+					
                     childValue = {
             			type: el.nodeType,
             			tagName: 'TEXT',
@@ -373,6 +397,12 @@ function isVisible(el){
 			return false;
 		}
 
+		if(style.opacity === 0 || style.opacity === '0' || style.opacity === '0.0'){
+			el.sgmInvisibilityReason = 'Opacity is 0';
+			el.sgmIsVisible = false;
+			return false;
+		}
+		
 		if(style.visibility === 'hidden' || style.visibility === 'collapse'){
 			el.sgmInvisibilityReason = 'Visibility hidden';
 			el.sgmIsVisible = false;

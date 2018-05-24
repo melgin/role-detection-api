@@ -4,9 +4,20 @@ var chai = require('chai'),
 	config = JSON.parse(fs.readFileSync('./config.json', 'utf8')),
     rectangleUtil = require('./utils/rectangle-util'),
 	segmenter = require('./page-segmenter')
+
+var intersectCount = 0;
 	
-doTheThing('outlook');
-	
+//doTheThing('adobe');
+//doTheThing('outlook');
+//doTheThing('whatsapp');
+doTheThing('netflix');
+doTheThing('wordpress');
+doTheThing('amazon');
+doTheThing('bbc');
+//doTheThing('youtube');
+
+console.log(intersectCount + ' intersections');
+
 function doTheThing(key){
 	console.log(key);
 	
@@ -16,8 +27,9 @@ function doTheThing(key){
 		
 	checkIntersection(block);
 	console.log('\n');
+	
+	
 }
-
 	
 function checkIntersection(block){
 	for(var i = 0; i < block.getChildCount(); i++){
@@ -42,7 +54,11 @@ function checkIntersection(block){
 			}
 			
 			if(rectangleUtil.checkBlockIntersection(b1, b2)/* && b1.getRole() !== 'BackgroundImage' && b2.getRole() !== 'BackgroundImage'*/){
-				console.log(b1.getName() + ': ' + b1.getNode().xpath + " - " + b2.getName() + ': ' + b2.getNode().xpath);
+				intersectCount++;
+				console.log(b1.getName() + ': ' + b1.getNode().xpath + " (" + b1.getRole() + ") - " + b2.getName() + ': ' + b2.getNode().xpath + ' (' + b2.getRole() + ')');
+				console.log(' -> ' + rectangleUtil.equals(rectangleUtil.getIntersectionRectangle(b1.getLocation(), b2.getLocation()), b1.getLocation()));
+				console.log(' -> ' + rectangleUtil.equals(rectangleUtil.getIntersectionRectangle(b1.getLocation(), b2.getLocation()), b2.getLocation()));
+				console.log(' -> ' + JSON.stringify(rectangleUtil.getIntersectionRectangle(b1.getLocation(), b2.getLocation())));
 				console.log(' -> ' + JSON.stringify(b1.getLocation()));
 				console.log(' -> ' + JSON.stringify(b2.getLocation()));
 				console.log('');

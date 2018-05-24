@@ -117,7 +117,7 @@ function getIntersectionRectangle(b1, b2){
 	var xOverlap = Math.max(0, Math.min(b1.topX + b1.width, b2.topX + b2.width) - Math.max(b1.topX, b2.topX));
 	var yOverlap = Math.max(0, Math.min(b1.topY + b1.height, b2.topY + b2.height) - Math.max(b1.topY, b2.topY));
 
-	return { topX: Math.max(b1.topX, b2.topX), topY: Math.max(b1.topY, b2.topY), width: xOverlap, height: yOverlap};
+	return { width: xOverlap, height: yOverlap, topX: Math.max(b1.topX, b2.topX), topY: Math.max(b1.topY, b2.topY)};
 }
 
 function checkBlockIntersection(b1, b2){
@@ -129,17 +129,17 @@ function subtractBlock(b1, b2){
 
 	if(intersectionArea / b1.getArea() >= 0.8 || intersectionArea / b2.getArea() >= 0.8){
 		if(b1.isImageBlock()){
-			if(isInBorder(b1.getLocation(), b2.getLocation())){
-				subtractRecursive(b1.getLocation(), b2);
-			}
+			//if(isInBorder(b1.getLocation(), b2.getLocation())){
+				subtractRecursive(b1, b2);
+			//}
 			
 			return b1.setRole('BackgroundImage');
 		}
 
 		if(b2.isImageBlock()){
-			if(isInBorder(b2.getLocation(), b1.getLocation())){
-				subtractRecursive(b2.getLocation(), b1);
-			}
+			//if(isInBorder(b2.getLocation(), b1.getLocation())){
+				subtractRecursive(b2, b1);
+			//}
 	
 			return b2.setRole('BackgroundImage');
 		}
@@ -149,38 +149,57 @@ function subtractBlock(b1, b2){
 	var zIndex2 = b2.getNode().attributes.zIndex;
 
 	if(zIndex1 > zIndex2){
-		subtractRecursive(b1.getLocation(), b2);
+		subtractRecursive(b1, b2);
 	} else if(zIndex1 < zIndex2){
-		subtractRecursive(b2.getLocation(), b1);
+		subtractRecursive(b2, b1);
 	} else if(b1.getNode().type === 3){
-		subtractRecursive(b2.getLocation(), b1);
+		subtractRecursive(b2, b1);
 	} else if(b2.getNode().type === 3){
-		subtractRecursive(b1.getLocation(), b2);
+		subtractRecursive(b1, b2);
 	} else {
 		var intersection = getIntersectionRectangle(b1.getLocation(), b2.getLocation());
 		
 		var b1HasChildInIntersectionArea = hasChildInIntersectionArea(intersection, b1);
 		var b2HasChildInIntersectionArea = hasChildInIntersectionArea(intersection, b2);
 		if(b1HasChildInIntersectionArea && ! b2HasChildInIntersectionArea){
-			subtractRecursive(b1.getLocation(), b2);
+			subtractRecursive(b1, b2);
 		} else if(b2HasChildInIntersectionArea && ! b1HasChildInIntersectionArea){
-			subtractRecursive(b2.getLocation(), b1);
+			subtractRecursive(b2, b1);
+		} else if(b1.isImageBlock()){
+			subtractRecursive(b1, b2);
+		} else if(b2.isImageBlock()){
+			subtractRecursive(b2, b1);
+		//} else if(b1.getTagName() === 'COMPOSITE'){
+		//	subtractRecursive(b2.getLocation(), b1);
+		//} else if(b2.getTagName() === 'COMPOSITE'){
+		//	subtractRecursive(b1.getLocation(), b2);
 		} else {
-			b1.subtractPadding();
-			b2.subtractPadding();
+			if((intersection.height >= b1.getLocation().height - 1 && intersection.height <= b2.getLocation().height - 1) || (intersection.width >= b1.getLocation().width - 1 && intersection.width <= b2.getLocation().width - 1)){
+				subtractRecursive(b1, b2);
+			} else if((intersection.height >= b2.getLocation().height - 1 && intersection.height <= b1.getLocation().height - 1) || (intersection.width >= b2.getLocation().width - 1 && intersection.width <= b1.getLocation().width - 1)){
+				subtractRecursive(b2, b1);
+			} else {
+				subtractRecursive(b1, b2);
+				b1.subtractPadding();
+				b2.subtractPadding();
+			}
 		}
 	}
 }
 
-function subtractRecursive(location, b2){
-	var l = subtract(location, b2.getLocation());
+function subtractRecursive(b1, b2, recursive){
+	if(equals(getIntersectionRectangle(b1.getLocation(), b2.getLocation()), b2.getLocation()) && ! recursive){
+		return subtractRecursive(b2, b1, true);
+	}
+	
+	var l = subtract(b1.getLocation(), b2.getLocation());
 
 	if(l.height !== 0 && l.width !== 0){
 		b2.setLocation(l);
 	}
 
 	for(var i = 0; i < b2.getChildCount(); i++){
-		subtractRecursive(location, b2.getChildAt(i));
+		subtractRecursive(b1, b2.getChildAt(i));
 	}
 }
 
@@ -195,29 +214,59 @@ function subtract(blockInFront, blockAtBack){
 		b2 = blockAtBack.topY + blockAtBack.height,
         diff;
 
-	if(l1 === l2 && r1 === r2) {
-		// do nothing
-	} else if(l1 <= l2 && l2 < r1 && r1 <= r2){
-		diff = r1 - l2;
-		blockAtBack.topX += diff;
-		blockAtBack.width -= diff;
-		return blockAtBack;
-	} else if(l2 <= l1 && l1 < r2 && r2 <= r1){
-		blockAtBack.width -= r2 - l1;
+	var xOverlap = Math.max(0, Math.min(b1.topX + b1.width, b2.topX + b2.width) - Math.max(b1.topX, b2.topX));
+	var yOverlap = Math.max(0, Math.min(b1.topY + b1.height, b2.topY + b2.height) - Math.max(b1.topY, b2.topY));
+	
+	if(xOverlap > yOverlap){
+		if(l1 === l2 && r1 === r2) {
+			// do nothing
+		} else if(l1 <= l2 && l2 < r1 && r1 <= r2){
+			diff = r1 - l2;
+			blockAtBack.topX += diff;
+			blockAtBack.width -= diff;
+			
+			return blockAtBack;
+		} else if(l2 <= l1 && l1 < r2 && r2 <= r1){
+			blockAtBack.width -= r2 - l1;
+			
+			return blockAtBack;
+		}
 
-		return blockAtBack;
+		if(t1 === t2 && b1 === b2) {
+			// do nothing
+		} else if(t1 <= t2 && t2 < b1 && b1 <= b2){
+			diff = b1 - t2;
+			blockAtBack.topY += diff;
+			blockAtBack.height -= diff;
+		} else if(t2 <= t1 && t1 < b2 && b2 <= b1){
+			blockAtBack.height -= b2 - t1;
+		}
+	} else {
+		if(t1 === t2 && b1 === b2) {
+			// do nothing
+		} else if(t1 <= t2 && t2 < b1 && b1 <= b2){
+			diff = b1 - t2;
+			blockAtBack.topY += diff;
+			blockAtBack.height -= diff;
+			
+			return blockAtBack;
+		} else if(t2 <= t1 && t1 < b2 && b2 <= b1){
+			blockAtBack.height -= b2 - t1;
+			
+			return blockAtBack;
+		}
+		
+		if(l1 === l2 && r1 === r2) {
+			// do nothing
+		} else if(l1 <= l2 && l2 < r1 && r1 <= r2){
+			diff = r1 - l2;
+			blockAtBack.topX += diff;
+			blockAtBack.width -= diff;
+		} else if(l2 <= l1 && l1 < r2 && r2 <= r1){
+			blockAtBack.width -= r2 - l1;
+		}
 	}
-
-	if(t1 === t2 && b1 === b2) {
-		// do nothing
-	} else if(t1 <= t2 && t2 < b1 && b1 <= b2){
-		diff = b1 - t2;
-		blockAtBack.topY += diff;
-		blockAtBack.height -= diff;
-	} else if(t2 <= t1 && t1 < b2 && b2 <= b1){
-		blockAtBack.height -= b2 - t1;
-	}
-
+	
 	return blockAtBack;
 }
 
@@ -320,10 +369,16 @@ function isBetweenInterval(val, start, distance){
 	return val >= start && val <= (start + distance);
 }
 
+function equals(b1, b2){
+	return b1.width === b2.width && b1.height === b2.height && b1.topX === b2.topX && b1.topY === b2.topY;
+}
+
 module.exports.getWhiteSpaceArea = getWhiteSpaceArea;
 module.exports.checkIntersection = checkIntersection;
 module.exports.getIntersectionArea = getIntersectionArea;
 module.exports.checkBlockIntersection = checkBlockIntersection;
+module.exports.getIntersectionRectangle = getIntersectionRectangle;
 module.exports.isBetweenNodeChildren = isBetweenNodeChildren;
 module.exports.subtractBlock = subtractBlock;
 module.exports.subtract = subtract;
+module.exports.equals = equals;

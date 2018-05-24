@@ -34,6 +34,11 @@ Block.prototype.addChild = function(child){
     this.children.push(child);
 }
 
+Block.prototype.removeChild = function(i){
+    this.block.children.splice(i, 1);
+    this.children.splice(i, 1);
+}
+
 Block.prototype.getChildAt = function(i){
     return this.children[i];
 }

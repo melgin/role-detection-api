@@ -1,5 +1,6 @@
 var Block = require('../block'),
-	Node = require('../dom-node');
+	Node = require('../dom-node'),
+	rectUtil = require('./rectangle-util');
 
 /**
  * Constructs a new block and put into the block pool
@@ -58,6 +59,39 @@ function putIntoPool(parentBlock, node, doc, callback){
         node
     );
 
+	if(node.isCompositeNode()){
+		if(intersectsWithSiblings(block, parentBlock)){
+			for(var i = 0; i < node.getChildCount(); i++){
+				var child = node.getChildAt(i);
+				
+				putIntoPool(parentBlock, child, doc, callback);
+			}
+			
+			return;
+		}
+	} else {
+		var removeList = [];
+		var addList = [];
+		for(var i = 0; i < parentBlock.getChildCount(); i++){
+			var sibling = parentBlock.getChildAt(i);
+			if(rectUtil.checkBlockIntersection(block, sibling) && sibling.getNode().isCompositeNode){
+				removeList.push(i);
+				
+				for(var i = 0; i < sibling.getChildCount(); i++){
+					addList.push(sibling.getChildAt(i));
+				}
+			}
+		}
+		
+		for(var j = removeList.length - 1; j >= 0; j--){
+			parentBlock.removeChild(removeList[j]);
+		}
+		
+		addList.forEach(function(child){
+			parentBlock.addChild(child);
+		});
+	}
+	
     parentBlock.addChild(block);
 
 	/* Recursive call for children */
@@ -66,6 +100,16 @@ function putIntoPool(parentBlock, node, doc, callback){
     }
 
 	return block;
+}
+
+function intersectsWithSiblings(block, parentBlock){
+	for(var i = 0; i < parentBlock.getChildCount(); i++){
+		if(rectUtil.checkBlockIntersection(block, parentBlock.getChildAt(i))){
+			return true;
+		}
+	}
+	
+	return false;
 }
 
 /**

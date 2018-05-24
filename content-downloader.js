@@ -2,11 +2,14 @@ var fs = require('fs'),
 	config = JSON.parse(fs.readFileSync('./config.json', 'utf8')),
 	Horseman = require('node-horseman');
 	
-download('http://emine.ncc.metu.edu.tr/survey/web/pages2/http/www.bbc.co.uk/', './tests/data/bbc.json', save);
-download('http://emine.ncc.metu.edu.tr/survey/web/pages2/http/www.avg.com/us-en/index.html', './tests/data/avg.json', save);
-download('http://emine.ncc.metu.edu.tr/survey/web/pages2/http/www.babylon.com/', './tests/data/babylon.json', save);
-download('http://emine.ncc.metu.edu.tr/survey/web/pages2/http/www.apple.com/', './tests/data/apple.json', save);
-download('http://emine.ncc.metu.edu.tr/survey/web/pages2/http/uk.yahoo.com/', './tests/data/yahoo.json', save);
+download('http://users.metu.edu.tr/seraslan/pages/adobe/index.html', './tests/data/adobe.json', save);
+download('http://users.metu.edu.tr/seraslan/pages/outlook/index.html', './tests/data/outlook.json', save);
+download('http://users.metu.edu.tr/seraslan/pages/whatsapp/index.html', './tests/data/whatsapp.json', save);
+download('http://users.metu.edu.tr/seraslan/pages/netflix/cy/index.html', './tests/data/netflix.json', save);
+download('http://vista.ar-ni.com/pages/wordpress/index.html', './tests/data/wordpress.json', save);
+download('http://vista.ar-ni.com/pages/amazon/index.html', './tests/data/amazon.json', save);
+download('http://users.metu.edu.tr/seraslan/pages/bbc/index.html', './tests/data/bbc.json', save);
+download('http://users.metu.edu.tr/seraslan/pages/youtube/index.html', './tests/data/youtube.json', save);
 	
 function download(url, fileName, callback){
 	var width = 1920,
