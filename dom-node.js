@@ -291,6 +291,48 @@ Node.prototype.containsLineBreakObject = function() {
     return false;
 }
 
+Node.prototype.allChildrenIntersect = function() {
+	if(! this.hasChild() || this.getChildCount() < 2){
+        return false;
+    }
+	
+	for(var i = 0; i < this.node.children.length; i++){
+		var n1 = this.node.children[i];
+		
+		if(hasNonTextChild(n1)){
+			return false;
+		}
+		
+		
+		for(var j = i + 1; j < this.node.children.length; j++){
+			var n2 = this.node.children[j];
+			
+			if(hasNonTextChild(n2)){
+				return false;
+			}
+			
+			if(! rectUtil.checkIntersection({"topX": n1.attributes.positionX, "topY": n1.attributes.positionY, "width": n1.attributes.width, "height": n1.attributes.height}, 
+				{"topX": n2.attributes.positionX, "topY": n2.attributes.positionY, "width": n2.attributes.width, "height": n2.attributes.height})){
+				return false;
+			}
+		}
+    }
+
+    return true;
+}
+
+function hasNonTextChild(n){
+	if(n.children.length === 0){
+		return false;
+	}
+	
+	if(n.children.length === 1 && n.children[0].type === 3){
+		return false;
+	}
+	
+	return true;
+}
+
 Node.prototype.hasInsersectingChildren = function() {
     if(! this.hasChild() || this.getChildCount() < 2){
         return false;

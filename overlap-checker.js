@@ -10,11 +10,11 @@ var intersectCount = 0;
 //doTheThing('adobe');
 //doTheThing('outlook');
 //doTheThing('whatsapp');
-doTheThing('netflix');
-doTheThing('wordpress');
-doTheThing('amazon');
-doTheThing('bbc');
-//doTheThing('youtube');
+//doTheThing('netflix');
+//doTheThing('wordpress');
+//doTheThing('amazon');
+//doTheThing('bbc');
+doTheThing('youtube');
 
 console.log(intersectCount + ' intersections');
 

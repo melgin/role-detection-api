@@ -69,7 +69,11 @@ function blockExtraction(block, currentNode, doc) {
 		// block has more than one children
 		// (a) if all of the children are virtual text nodes, the node will
 		// be a block
-		if (currentNode.areAllChildrenVirtualTextNodes()) {
+		
+		if(currentNode.allChildrenIntersect()){
+			log(currentNode.getXPath() + ' all children intersect');
+            block.setDoc(DOC_TERMINAL_FORM);
+		} else if (currentNode.areAllChildrenVirtualTextNodes()) {
             log(currentNode.getXPath() + ' all children are virtual text nodes ');
             block.setDoc(DOC_TERMINAL_FORM);
 			// the node will be a block

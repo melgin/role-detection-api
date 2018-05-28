@@ -2,14 +2,14 @@ var fs = require('fs'),
 	config = JSON.parse(fs.readFileSync('./config.json', 'utf8')),
 	Horseman = require('node-horseman');
 	
-download('http://users.metu.edu.tr/seraslan/pages/adobe/index.html', './tests/data/adobe.json', save);
-download('http://users.metu.edu.tr/seraslan/pages/outlook/index.html', './tests/data/outlook.json', save);
-download('http://users.metu.edu.tr/seraslan/pages/whatsapp/index.html', './tests/data/whatsapp.json', save);
-download('http://users.metu.edu.tr/seraslan/pages/netflix/cy/index.html', './tests/data/netflix.json', save);
-download('http://vista.ar-ni.com/pages/wordpress/index.html', './tests/data/wordpress.json', save);
-download('http://vista.ar-ni.com/pages/amazon/index.html', './tests/data/amazon.json', save);
-download('http://users.metu.edu.tr/seraslan/pages/bbc/index.html', './tests/data/bbc.json', save);
-download('http://users.metu.edu.tr/seraslan/pages/youtube/index.html', './tests/data/youtube.json', save);
+//download('http://users.metu.edu.tr/seraslan/pages/adobe/index.html', './tests/data/adobe.json', save);
+//download('http://users.metu.edu.tr/seraslan/pages/outlook/index.html', './tests/data/outlook.json', save);
+//download('http://users.metu.edu.tr/seraslan/pages/whatsapp/index.html', './tests/data/whatsapp.json', save);
+//download('http://users.metu.edu.tr/seraslan/pages/netflix/cy/index.html', './tests/data/netflix.json', save);
+//download('http://vista.ar-ni.com/pages/wordpress/index.html', './tests/data/wordpress.json', save);
+//download('http://vista.ar-ni.com/pages/amazon/index.html', './tests/data/amazon.json', save);
+//download('http://users.metu.edu.tr/seraslan/pages/bbc/index.html', './tests/data/bbc.json', save);
+download('http://users.metu.edu.tr/seraslan/pages/youtube/YouTube.html', './tests/data/youtube.json', save);
 	
 function download(url, fileName, callback){
 	var width = 1920,
