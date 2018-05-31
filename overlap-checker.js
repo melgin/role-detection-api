@@ -7,13 +7,13 @@ var chai = require('chai'),
 
 var intersectCount = 0;
 	
-//doTheThing('adobe');
-//doTheThing('outlook');
-//doTheThing('whatsapp');
-//doTheThing('netflix');
-//doTheThing('wordpress');
-//doTheThing('amazon');
-//doTheThing('bbc');
+doTheThing('adobe');
+doTheThing('outlook');
+doTheThing('whatsapp');
+doTheThing('netflix');
+doTheThing('wordpress');
+doTheThing('amazon');
+doTheThing('bbc');
 doTheThing('youtube');
 
 console.log(intersectCount + ' intersections');
@@ -33,17 +33,21 @@ function doTheThing(key){
 	
 function checkIntersection(block){
 	for(var i = 0; i < block.getChildCount(); i++){
+		var b1 = block.getChildAt(i);
+		if(b1.getChildCount() === 1){
+			console.log(b1.getName() + " single child");
+		}
+		
+		if(b1.getLocation().width == null || b1.getLocation().width <= 0){
+			console.log(b1.getName() + " invalid width");
+		}
+		
+		if(b1.getLocation().height == null || b1.getLocation().height <= 0){
+			console.log(b1.getName() + " invalid height");
+		}
+		
 		for(var j = i + 1; j < block.getChildCount(); j++){
-			var b1 = block.getChildAt(i),
-				b2 = block.getChildAt(j);
-			
-			if(b1.getLocation().width == null || b1.getLocation().width <= 0){
-				console.log(b1.getName() + " invalid width");
-			}
-			
-			if(b1.getLocation().height == null || b1.getLocation().height <= 0){
-				console.log(b1.getName() + " invalid height");
-			}
+			var b2 = block.getChildAt(j);
 			
 			if(b2.getLocation().width == null || b2.getLocation().width <= 0){
 				console.log(b2.getName() + " invalid width");

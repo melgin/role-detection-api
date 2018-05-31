@@ -183,6 +183,11 @@ Block.prototype.setLocationData = function(){
 		}
 	}
 
+	if(this.getChildCount() === 1){
+		this.block.children = this.getChildAt(0).block.children;
+		this.children = this.getChildAt(0).children;
+	}
+	
     var i;
 	for(i = 0; i < this.getChildCount(); i++){
 		this.getChildAt(i).setLocationData();
