@@ -105,3 +105,19 @@ The consequence increments the score of the role by a value specific to role and
 	"priority" : 4
 }
 ```
+
+### Important Note ###
+
+The original publication's approach and its implementation aim to provide researchers flexibility to define rules based on specific use cases. The rule set in this repository is for general purpose. We highly recommend users to check and modify the rules to achieve more accurate results.
+
+### Publication ###
+
+In case you wish to refer to Role Detection API in your publications, please use the following:
+
+```
+M. Elgin Akpinar, Yeliz Yeşilada, Discovering Visual Elements of Web Pages and Their Roles: Users’ Perception, Interacting with Computers, Volume 29, Issue 6, November 2017, Pages 845–867, https://doi.org/10.1093/iwc/iwx015
+```
+
+### Contact ###
+
+Please do not hesitate to send an email to elgin.akpinar@metu.edu.tr in case of any problems or suggestions.

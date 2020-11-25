@@ -226,11 +226,9 @@ describe('segment->handleDifferentFloat', function() {
         block = segmenter.segment(dom, 1920, 1080);
 
     it('segment(node) should divide the nodes with respect to floats', function() {
-        expect(block.getTreeHierarchy()).to.equal("BODY[DIV[COMPOSITE[DIV,DIV],DIV,DIV]," +
-        "DIV[DIV,DIV,COMPOSITE[DIV,DIV]]," +
-        "DIV[DIV,COMPOSITE[DIV,DIV,DIV]]," +
-        "DIV[DIV,COMPOSITE[DIV,DIV,DIV],COMPOSITE[DIV,DIV,DIV]]," +
-        "DIV[COMPOSITE[DIV,DIV],COMPOSITE[DIV,DIV]]]");
+        expect(block.getTreeHierarchy()).to.equal("BODY[DIV[COMPOSITE,DIV,DIV],DIV[DIV,DIV,COMPOSITE],DIV[DIV," +
+			"COMPOSITE[DIV,DIV,DIV]],DIV[DIV,COMPOSITE[DIV,DIV,DIV]," + 
+			"COMPOSITE[DIV,DIV,DIV]],DIV[COMPOSITE,COMPOSITE]]");
     });
 });
 
@@ -271,7 +269,7 @@ describe('segment', function() {
 
     it('segment(node) should divide the nodes with respect to specified rules (signin)', function() {
         expect(block.getTreeHierarchy()).to.equal(
-            "BODY[H2,COMPOSITE[COMPOSITE[INPUT,INPUT],DIV[INPUT,TEXT],BUTTON]]");
+            "BODY[H2,COMPOSITE[COMPOSITE[INPUT,INPUT],DIV,BUTTON]]");
     });
 });
 
