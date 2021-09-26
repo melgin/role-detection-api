@@ -1,35 +1,46 @@
-var fs = require('fs'),
-    config = JSON.parse(fs.readFileSync('./config.json', 'utf8')),
-	urlValidator = require('valid-url'),
-	express = require('express'),
-	bodyParser = require('body-parser'),
-	app = express(),
-	logger = require('./logger'),
-	roleDetector = require('./role-detector'),
-	pageSegmenter = require('./page-segmenter'),
-    Horseman = require('node-horseman');
+let fs = require('fs');
+let config = JSON.parse(fs.readFileSync('./config.json', 'utf8'));
+let urlValidator = require('valid-url');
+let express = require('express');
+let bodyParser = require('body-parser');
+let app = express();
+let logger = require('./logger');
+let roleDetector = require('./role-detector');
+let pageSegmenter = require('./page-segmenter');
+let pageRenderer = require('./page-renderer');
+let vicramCalculator = require('./vicram');
 
 app.use(bodyParser.json());
 app.post('/', process);
 app.post('/visual-complexity', vicram);
 
-var server = app.listen(config.port, function () {
-	var host = server.address().address
-	var port = server.address().port
+let server = app.listen(config.port, function () {
+	let host = server.address().address;
+	let port = server.address().port;
 
 	console.log("App listening at http://%s:%s", host, port)
 });
 
+vicramCalculator.calculateVicram({
+	"url": "http://elginakpinar.com/"
+}, function (err, result) {
+	if (err) {
+		console.log(err);
+	} else {
+		console.log(result);
+	}
+});
+
 function process(req, res){
-	var url = req.body.url,
-        width = +req.body.width ? req.body.width : 1920,
-        height = +req.body.height ? req.body.height : 1080,
-		explainRoles = req.body.explainRoles,
-        agent = req.body.userAgent,
-        wait = req.body.wait,
-        t0 = 0,
-        t1 = 0,
-        t2 = 0;
+	let url = req.body.url;
+	let width = +req.body.width ? req.body.width : 1920;
+	let height = +req.body.height ? req.body.height : 1080;
+	let explainRoles = req.body.explainRoles;
+	let agent = req.body.userAgent;
+	let wait = req.body.wait;
+	let t0 = 0;
+	let t1 = 0;
+	let t2 = 0;
 
     if(agent){
         agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0';
@@ -39,10 +50,10 @@ function process(req, res){
         wait = 0;
     }
 
-	var sendErrorResponse = function(status, message){
+	let  sendErrorResponse = function(status, message){
 		res.writeHead(status, {'Content-Type': 'application/json'});
 		res.end(JSON.stringify({"success": false, "error": message}));
-	}
+	};
 
 	if(! urlValidator.isWebUri(url)){
 		logger.error("Invalid url:" + url);
@@ -59,207 +70,65 @@ function process(req, res){
 		return sendErrorResponse(400, "Invalid height!");
 	}
 
-    var horseman = new Horseman({phantomPath: config.phantomjsPath});
+	t0 = Date.now();
 
-    t0 = Date.now();
+	pageRenderer.retrieve(url, width, height, function(nodeTree) {
+		t1 = Date.now();
 
-    horseman
-        .userAgent(agent)
-        .viewport(width, height)
-        .open(url)
-		.then(function () {
-			t1 = Date.now();
-		})
-        .wait(wait)
-        .on('consoleMessage', function( msg ){
-            console.log(msg);
-        })
-        .catch((error) => {
-			horseman.close();
-            return sendErrorResponse(500, error);
-		})
-        .injectJs('page-renderer.js')
-        .evaluate(function () {
-            return traverseDOMTree(document, true, null, 0);
-        })
-        .then(function (nodeTree) {
-            var blockTree = null,
-                pageWidth = 0,
-                pageHeight = 0,
-                fontColor = null,
-                fontSize = null;
+		let blockTree = null;
+		let pageWidth = 0;
+		let pageHeight = 0;
+		let fontColor = null;
+		let fontSize = null;
 
-            if(nodeTree){
-                pageWidth = nodeTree.attributes.width;
-                pageHeight = nodeTree.attributes.height;
-                fontColor = nodeTree.attributes.fontColor;
-                fontSize = nodeTree.attributes.fontSize;
-				blockTree = pageSegmenter.segment(nodeTree, width, height);
-			}
+		if(nodeTree){
+			pageWidth = nodeTree.attributes.width;
+			pageHeight = nodeTree.attributes.height;
+			fontColor = nodeTree.attributes.fontColor;
+			fontSize = nodeTree.attributes.fontSize;
+			blockTree = pageSegmenter.segment(nodeTree, width, height);
+		}
 
-            t2 = Date.now();
+		t2 = Date.now();
 
-			blockTree.setLocationData();
-            blockTree.calculateWhiteSpaceArea(true);
+		blockTree.setLocationData();
+		blockTree.calculateWhiteSpaceArea(true);
 
-			if(blockTree){
-				roleDetector.detectRoles(blockTree, pageWidth, pageHeight, fontSize, fontColor,
-                    explainRoles, sendResponse);
-			} else {
-                sendResponse(blockTree);
-            }
-        })
-        .close();
+		if(blockTree){
+			roleDetector.detectRoles(blockTree, pageWidth, pageHeight, fontSize, fontColor,
+				explainRoles, sendResponse);
+		} else {
+			sendResponse(blockTree);
+		}
+	});
 
-        function sendResponse(block){
-            var t3 = Date.now();
-            res.writeHead(200, {'Content-Type': 'application/json'});
-            res.end(JSON.stringify({
-                "success": true,
-                "renderingTime": t1 - t0,
-                "segmentationTime": t2 - t1,
-                "reasoningTime": t3 - t2,
-                "result": block.toJson()
-            }));
-        }
+	function sendResponse(block){
+		let t3 = Date.now();
+		res.writeHead(200, {'Content-Type': 'application/json'});
+		res.end(JSON.stringify({
+			"success": true,
+			"renderingTime": t1 - t0,
+			"segmentationTime": t2 - t1,
+			"reasoningTime": t3 - t2,
+			"result": block.toJson()
+		}));
+	}
 }
 
 function vicram(req, res){
-	var url = req.body.url,
-        width = +req.body.width ? req.body.width : 1920,
-        height = +req.body.height ? req.body.height : 1080,
-        agent = req.body.userAgent,
-        wait = req.body.wait,
-        t0 = 0,
-        t1 = 0,
-        t2 = 0,
-		tlc = null,
-		imageCount = null,
-		wordCount = null,
-		errorMessage = null;
-
-    if(! wait || wait < 0){
-        wait = 0;
-    }
-
-    if(agent){
-        agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0';
-    }
-
-	var sendErrorResponse = function(status, message){
-		res.writeHead(status, {'Content-Type': 'application/json'});
-		res.end(JSON.stringify({"success": false, "error": message}));
-	}
-
-	if(! urlValidator.isWebUri(url)){
-		logger.error("Invalid url:" + url);
-		return sendErrorResponse(400, "Invalid url!");
-	}
-
-	if(width < 0){
-		logger.error("Invalid width:" + width);
-		return sendErrorResponse(400, "Invalid width!");
-	}
-
-	if(height < 0){
-		logger.error("Invalid height:" + height);
-		return sendErrorResponse(400, "Invalid height!");
-	}
-
-    var horseman = new Horseman({phantomPath: config.phantomjsPath});
-
-    t0 = Date.now();
-
-	try {
-		horseman
-			.userAgent(agent)
-			.viewport(width, height)
-			.open(url)
-			.then(function () {
-				console.log('Opened the document');
-				t1 = Date.now();
-			})
-            .wait(wait)
-			.on('consoleMessage', function( msg ){
-				console.log(msg);
-			})
-            .catch((error) => {
-    			horseman.close();
-                return sendErrorResponse(500, error);
-    		})
-			.injectJs('vicram.js')
-			.injectJs('page-renderer.js')
-			.evaluate(function () {
-				console.log('Evaluating');
-				return calculateVicramScore(document);
-			})
-			.then(function (vicramResponse) {
-				errorMessage = vicramResponse.err;
-				tlc = vicramResponse.tlc;
-				imageCount = vicramResponse.imageCount;
-				wordCount = vicramResponse.wordCount;
-			})
-			.evaluate(function () {
-				return traverseDOMTree(document, true, null, 0);
-			})
-			.then(function (nodeTree) {
-				var blockTree = null,
-					pageWidth = 0,
-					pageHeight = 0,
-					fontColor = null,
-					fontSize = null;
-
-				if(nodeTree){
-					pageWidth = nodeTree.attributes.width;
-					pageHeight = nodeTree.attributes.height;
-					fontColor = nodeTree.attributes.fontColor;
-					fontSize = nodeTree.attributes.fontSize;
-					blockTree = pageSegmenter.segment(nodeTree, width, height);
-				}
-
-				t2 = Date.now();
-
-				var numberOfBlocks = blockTree.getOverallBlockCount();
-				var numberOfLeaves = blockTree.getOverallLeafCount();
-				var depth = blockTree.getDepth();
-
-				if(errorMessage){
-					return sendErrorResponse(500, errorMessage);
-				}
-
-				sendResponse({
-					vicram: calculateVcs(tlc, wordCount, imageCount),
-					numberOfBlocks: calculateVcs(numberOfBlocks, wordCount, imageCount),
-					numberOfLeaves: calculateVcs(numberOfLeaves, wordCount, imageCount),
-					depth: calculateVcs(depth, wordCount, imageCount)
-				});
-			})
-			.catch(function (err, o) {
-				return sendErrorResponse(500, err.message);
-			})
-			.close();
-		} catch (err){
-			return sendErrorResponse(500, err);
+	vicramCalculator.calculateVicram(req.body, function (err, result) {
+		if (err) {
+			res.writeHead(400, {'Content-Type': 'application/json'});
+			res.end(JSON.stringify({"success": false, "error": err}));
+		} else {
+			let t2 = Date.now();
+			res.writeHead(200, {'Content-Type': 'application/json'});
+			res.end(JSON.stringify({
+				"success": true,
+				"renderingTime": result.t1 - result.t0,
+				"calculationTime": t2 - result.t1,
+				"result": result
+			}));
 		}
-
-        function sendResponse(vicramResponse){
-            var t2 = Date.now();
-            res.writeHead(200, {'Content-Type': 'application/json'});
-            res.end(JSON.stringify({
-                "success": true,
-                "renderingTime": t1 - t0,
-                "calculationTime": t2 - t1,
-                "result": vicramResponse
-            }));
-        }
-}
-
-function calculateVcs(block, wordCount, imageCount){
-	var vcs = (1.743 + 0.097 * (block) + 0.053 * (wordCount) + 0.003 * (imageCount)) / 10;
-
-	if(vcs > 10){
-		return 10.0;
-	}
-
-	return vcs;
+	});
 }
