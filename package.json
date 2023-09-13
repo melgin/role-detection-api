@@ -13,7 +13,7 @@
   "author": "Elgin Akpinar",
   "license": "ISC",
   "dependencies": {
-    "node-rules": "3.1.0",
+    "node-rules": "5.0.0",
     "body-parser": "^1.15.2",
     "bunyan": "^1.8.1",
     "express": "^4.14.0",
