@@ -21,12 +21,7 @@ The application starts listening at specified port.
 
 ### Configuration ###
 
-* phantomjsPath: Path to the PhantomJS binary, ex:"..\\bin\\phantomjs.exe",
 * port: The port which application listens the requests, ex:8080
-
-### Dependencies ###
-
-Project depends on PhantomJS and several NodeJS packages. PhantomJS should be downloaded at http://phantomjs.org/ and binary path should be set in config file. Npm handles NodeJS dependencies.
 
 ### Sample API Call ###
 
@@ -38,7 +33,7 @@ POST http://localhost:8080/
     "width": 1920,
     "height": 1080,
     "agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0",
-    "explainRoles: false
+    "explainRoles": false
 }
 ```
 
@@ -102,9 +97,7 @@ The original publication's approach and its implementation aim to provide resear
 
 In case you wish to refer to Role Detection API in your publications, please use the following:
 
-```
 M. Elgin Akpinar, Yeliz Yeşilada, Discovering Visual Elements of Web Pages and Their Roles: Users’ Perception, Interacting with Computers, Volume 29, Issue 6, November 2017, Pages 845–867, https://doi.org/10.1093/iwc/iwx015
-```
 
 ### Contact ###
 
