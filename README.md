@@ -7,16 +7,12 @@ This project aims to develop an API to segment web pages into visual blocks and 
 To install NodeJS dependencies, use npm with following command:
 
 ```
-#!bash
-
 npm install
 ```
 
 It will download all modules. Then, start the application as follows:
 
 ```
-#!bash
-
 npm start
 ```
 
@@ -36,8 +32,6 @@ Project depends on PhantomJS and several NodeJS packages. PhantomJS should be do
 
 Request:
 ```
-#!javascript
-
 POST http://localhost:8080/
 {
     "url":"http://elginakpinar.com",
@@ -50,7 +44,6 @@ POST http://localhost:8080/
 
 Response:
 ```
-#!javascript
 {
     "success": true,
     "renderingTime": 3358,
@@ -72,8 +65,6 @@ Response:
 ### Running Unit Tests ###
 
 ```
-#!javascript
-
 npm install mocha -g
 npm test
 ```
@@ -84,8 +75,6 @@ In this project, we use node-rules module as a rule engine to detect roles. This
 After modifying the rules in rule-generator.js, following command creates rules.txt to be used in rule engine implementation:
 
 ```
-#!bash
-
 node rule-generator.js > rules.txt
 ```
 
@@ -93,7 +82,6 @@ A rule has a condition and a consequence. The condition checks whether an attrib
 The consequence increments the score of the role by a value specific to role and attribute.
 
 ```
-#!javascript
 {
 	"condition" : function(R) {
 		R.when(this.attribute === 0);
